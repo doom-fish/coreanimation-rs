@@ -1,4 +1,8 @@
 use crate::animation::Animation;
+use crate::private::handle_type;
+use crate::transaction::Transaction;
+
+handle_type!(TimingFunction);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
@@ -47,7 +51,59 @@ impl MediaTimingFillMode {
     }
 }
 
+impl TimingFunction {
+    #[must_use]
+    pub fn with_name(name: TimingFunctionName) -> Option<Self> {
+        unsafe { Self::from_raw(crate::ffi::ca_timing_function_new_named(name.raw())) }
+    }
+
+    #[must_use]
+    pub fn with_control_points(c1x: f32, c1y: f32, c2x: f32, c2y: f32) -> Option<Self> {
+        unsafe {
+            Self::from_raw(crate::ffi::ca_timing_function_new_control_points(
+                c1x, c1y, c2x, c2y,
+            ))
+        }
+    }
+
+    #[must_use]
+    pub fn name(&self) -> Option<TimingFunctionName> {
+        TimingFunctionName::from_raw(unsafe {
+            crate::ffi::ca_timing_function_get_name(self.as_ptr())
+        })
+    }
+
+    #[must_use]
+    pub fn control_point(&self, index: usize) -> Option<(f32, f32)> {
+        let mut values = [0.0_f32; 2];
+        let ok = unsafe {
+            crate::ffi::ca_timing_function_get_control_point(
+                self.as_ptr(),
+                index,
+                values.as_mut_ptr().cast::<core::ffi::c_void>(),
+            )
+        };
+        ok.then_some((values[0], values[1]))
+    }
+}
+
 impl Animation {
+    #[must_use]
+    pub fn timing_function(&self) -> Option<TimingFunction> {
+        unsafe {
+            TimingFunction::from_raw(crate::ffi::ca_animation_get_timing_function(self.as_ptr()))
+        }
+    }
+
+    pub fn set_timing_function(&self, value: Option<&TimingFunction>) {
+        unsafe {
+            crate::ffi::ca_animation_set_timing_function(
+                self.as_ptr(),
+                value.map_or(core::ptr::null_mut(), TimingFunction::as_ptr),
+            )
+        };
+    }
+
     #[must_use]
     pub fn begin_time(&self) -> f64 {
         unsafe { crate::ffi::ca_animation_get_begin_time(self.as_ptr()) }
@@ -93,5 +149,22 @@ impl Animation {
 
     pub fn set_fill_mode(&self, value: MediaTimingFillMode) {
         unsafe { crate::ffi::ca_animation_set_fill_mode(self.as_ptr(), value as i32) };
+    }
+}
+
+impl Transaction {
+    #[must_use]
+    pub fn animation_timing_function() -> Option<TimingFunction> {
+        unsafe {
+            TimingFunction::from_raw(crate::ffi::ca_transaction_get_animation_timing_function())
+        }
+    }
+
+    pub fn set_animation_timing_function(value: Option<&TimingFunction>) {
+        unsafe {
+            crate::ffi::ca_transaction_set_animation_timing_function(
+                value.map_or(core::ptr::null_mut(), TimingFunction::as_ptr),
+            )
+        };
     }
 }

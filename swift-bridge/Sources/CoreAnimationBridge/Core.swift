@@ -125,6 +125,24 @@ func caContentsGravityRaw(_ value: CALayerContentsGravity) -> Int32 {
     }
 }
 
+@available(macOS 15.0, *)
+func caToneMapMode(_ raw: Int32) -> CALayer.ToneMapMode {
+    switch raw {
+    case 1: return .never
+    case 2: return .ifSupported
+    default: return .automatic
+    }
+}
+
+@available(macOS 15.0, *)
+func caToneMapModeRaw(_ value: CALayer.ToneMapMode) -> Int32 {
+    switch value {
+    case .never: return 1
+    case .ifSupported: return 2
+    default: return 0
+    }
+}
+
 func caLineCap(_ raw: Int32) -> CAShapeLayerLineCap {
     switch raw {
     case 1: return .round
@@ -343,6 +361,38 @@ func caTransitionSubtypeRaw(_ value: CATransitionSubtype?) -> Int32 {
     case .fromLeft: return 2
     case .fromTop: return 3
     case .fromBottom: return 4
+    default: return 0
+    }
+}
+
+func caValueFunctionName(_ raw: Int32) -> CAValueFunctionName {
+    switch raw {
+    case 1: return .rotateY
+    case 2: return .rotateZ
+    case 3: return .scale
+    case 4: return .scaleX
+    case 5: return .scaleY
+    case 6: return .scaleZ
+    case 7: return .translate
+    case 8: return .translateX
+    case 9: return .translateY
+    case 10: return .translateZ
+    default: return .rotateX
+    }
+}
+
+func caValueFunctionNameRaw(_ value: CAValueFunctionName) -> Int32 {
+    switch value {
+    case .rotateY: return 1
+    case .rotateZ: return 2
+    case .scale: return 3
+    case .scaleX: return 4
+    case .scaleY: return 5
+    case .scaleZ: return 6
+    case .translate: return 7
+    case .translateX: return 8
+    case .translateY: return 9
+    case .translateZ: return 10
     default: return 0
     }
 }

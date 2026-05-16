@@ -26,7 +26,9 @@ pub mod ca_gradient_layer;
 pub mod ca_keyframe_animation;
 pub mod ca_layer;
 pub mod ca_media_timing;
+pub mod ca_metal_display_link;
 pub mod ca_metal_layer;
+pub mod ca_property_animation;
 pub mod ca_replicator_layer;
 pub mod ca_scroll_layer;
 pub mod ca_shape_layer;
@@ -36,6 +38,7 @@ pub mod ca_tiled_layer;
 pub mod ca_transaction;
 pub mod ca_transform_layer;
 pub mod ca_transition;
+pub mod ca_value_function;
 pub mod color;
 pub mod display_link;
 pub mod emitter;
@@ -49,17 +52,19 @@ pub mod transform;
 
 pub use animation::{
     Animation, AnimationCalculationMode, AnimationGroup, AnimationLike, BasicAnimation,
-    KeyframeAnimation, RotationMode, SpringAnimation, Transition, TransitionSubtype,
-    TransitionType,
+    KeyframeAnimation, PropertyAnimation, RotationMode, SpringAnimation, Transition,
+    TransitionSubtype, TransitionType,
 };
 pub use ca_display_link::QuartzDisplayLink;
-pub use ca_media_timing::{MediaTimingFillMode, TimingFunctionName};
+pub use ca_media_timing::{MediaTimingFillMode, TimingFunction, TimingFunctionName};
+pub use ca_metal_display_link::{MetalDisplayLink, MetalDisplayLinkUpdate};
 pub use ca_replicator_layer::ReplicatorLayer;
 pub use ca_scroll_layer::{ScrollLayer, ScrollMode};
 pub use ca_shape_layer::ShapeFillRule;
 pub use ca_tiled_layer::TiledLayer;
 pub use ca_transaction::TransactionLockGuard;
 pub use ca_transform_layer::TransformLayer;
+pub use ca_value_function::{ValueFunction, ValueFunctionName};
 pub use color::Color;
 pub use display_link::{CVReturn, CVSMPTETime, CVTime, CVTimeStamp, DisplayLink};
 pub use emitter::{EmitterCell, EmitterLayer, EmitterMode, EmitterRenderMode, EmitterShape};
@@ -67,6 +72,7 @@ pub use error::CoreAnimationError;
 pub use layer::{
     ContentsGravity, GradientLayer, GradientType, Layer, LayerLike, LineCap, LineJoin,
     MetalDrawable, MetalLayer, ShapeLayer, TextAlignmentMode, TextLayer, TextTruncationMode,
+    ToneMapMode,
 };
 pub use path::Path;
 pub use renderer::{read_texture_bytes, Renderer};
@@ -81,10 +87,12 @@ pub mod prelude {
         BasicAnimation, CVReturn, CVSMPTETime, CVTime, CVTimeStamp, Color, ContentsGravity,
         CoreAnimationError, DisplayLink, EmitterCell, EmitterLayer, EmitterMode, EmitterRenderMode,
         EmitterShape, GradientLayer, GradientType, KeyframeAnimation, Layer, LayerLike, LineCap,
-        LineJoin, MediaTimingFillMode, MetalDrawable, MetalLayer, Path, QuartzDisplayLink,
-        Renderer, ReplicatorLayer, RotationMode, ScrollLayer, ScrollMode, ShapeFillRule,
-        ShapeLayer, SpringAnimation, TextAlignmentMode, TextLayer, TextTruncationMode, TiledLayer,
-        TimingFunctionName, Transaction, TransactionCompletion, TransactionLockGuard, Transform3D,
-        TransformLayer, Transition, TransitionSubtype, TransitionType,
+        LineJoin, MediaTimingFillMode, MetalDisplayLink, MetalDisplayLinkUpdate, MetalDrawable,
+        MetalLayer, Path, PropertyAnimation, QuartzDisplayLink, Renderer, ReplicatorLayer,
+        RotationMode, ScrollLayer, ScrollMode, ShapeFillRule, ShapeLayer, SpringAnimation,
+        TextAlignmentMode, TextLayer, TextTruncationMode, TiledLayer, TimingFunction,
+        TimingFunctionName, ToneMapMode, Transaction, TransactionCompletion, TransactionLockGuard,
+        Transform3D, TransformLayer, Transition, TransitionSubtype, TransitionType, ValueFunction,
+        ValueFunctionName,
     };
 }

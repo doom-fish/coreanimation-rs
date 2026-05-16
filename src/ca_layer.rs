@@ -1,4 +1,4 @@
-use crate::layer::Layer;
+use crate::layer::{Layer, ToneMapMode};
 use crate::transform::Transform3D;
 
 impl Layer {
@@ -61,5 +61,19 @@ impl Layer {
 
     pub fn set_geometry_flipped(&self, value: bool) {
         unsafe { crate::ffi::ca_layer_set_geometry_flipped(self.as_ptr(), value) };
+    }
+
+    #[must_use]
+    pub fn supports_tone_map_mode() -> bool {
+        unsafe { crate::ffi::ca_layer_supports_tone_map_mode() }
+    }
+
+    #[must_use]
+    pub fn tone_map_mode(&self) -> ToneMapMode {
+        ToneMapMode::from_raw(unsafe { crate::ffi::ca_layer_get_tone_map_mode(self.as_ptr()) })
+    }
+
+    pub fn set_tone_map_mode(&self, value: ToneMapMode) {
+        unsafe { crate::ffi::ca_layer_set_tone_map_mode(self.as_ptr(), value as i32) };
     }
 }

@@ -44,6 +44,35 @@ func caTimingFunctionNameRaw(_ function: CAMediaTimingFunction?) -> Int32 {
     return -1
 }
 
+@_cdecl("ca_timing_function_new_named")
+public func ca_timing_function_new_named(_ value: Int32) -> UnsafeMutableRawPointer? {
+    caRetain(CAMediaTimingFunction(name: caTimingFunctionName(value)))
+}
+
+@_cdecl("ca_timing_function_new_control_points")
+public func ca_timing_function_new_control_points(_ c1x: Float, _ c1y: Float, _ c2x: Float, _ c2y: Float) -> UnsafeMutableRawPointer? {
+    caRetain(CAMediaTimingFunction(controlPoints: c1x, c1y, c2x, c2y))
+}
+
+@_cdecl("ca_timing_function_get_name")
+public func ca_timing_function_get_name(_ handle: UnsafeMutableRawPointer?) -> Int32 {
+    guard let function: CAMediaTimingFunction = caBorrow(handle) else { return -1 }
+    return caTimingFunctionNameRaw(function)
+}
+
+@_cdecl("ca_timing_function_get_control_point")
+public func ca_timing_function_get_control_point(_ handle: UnsafeMutableRawPointer?, _ index: Int, _ outValues: UnsafeMutableRawPointer?) -> Bool {
+    guard let function: CAMediaTimingFunction = caBorrow(handle), let outValues, index >= 0, index < 4 else {
+        return false
+    }
+    var values = [Float](repeating: 0, count: 2)
+    function.getControlPoint(at: index, values: &values)
+    let ptr = outValues.assumingMemoryBound(to: Float.self)
+    ptr[0] = values[0]
+    ptr[1] = values[1]
+    return true
+}
+
 func caFillMode(_ raw: Int32) -> CAMediaTimingFillMode {
     switch raw {
     case 1: return .forwards

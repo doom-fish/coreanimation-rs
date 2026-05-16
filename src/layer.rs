@@ -90,6 +90,24 @@ impl ContentsGravity {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+pub enum ToneMapMode {
+    Automatic = 0,
+    Never = 1,
+    IfSupported = 2,
+}
+
+impl ToneMapMode {
+    pub(crate) const fn from_raw(value: i32) -> Self {
+        match value {
+            1 => Self::Never,
+            2 => Self::IfSupported,
+            _ => Self::Automatic,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
 pub enum LineCap {
     Butt = 0,
     Round = 1,

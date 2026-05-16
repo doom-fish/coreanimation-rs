@@ -55,6 +55,11 @@ public func ca_animation_set_removed_on_completion(_ handle: UnsafeMutableRawPoi
     animation.isRemovedOnCompletion = value
 }
 
+@_cdecl("ca_property_animation_new")
+public func ca_property_animation_new(_ keyPath: UnsafePointer<CChar>?) -> UnsafeMutableRawPointer? {
+    caRetain(CAPropertyAnimation(keyPath: caCString(keyPath)))
+}
+
 @_cdecl("ca_basic_animation_new")
 public func ca_basic_animation_new(_ keyPath: UnsafePointer<CChar>?) -> UnsafeMutableRawPointer? {
     caRetain(CABasicAnimation(keyPath: caCString(keyPath)))
@@ -70,6 +75,21 @@ public func ca_property_animation_get_key_path(_ handle: UnsafeMutableRawPointer
 public func ca_property_animation_set_key_path(_ handle: UnsafeMutableRawPointer?, _ value: UnsafePointer<CChar>?) {
     guard let animation: CAPropertyAnimation = caBorrow(handle) else { return }
     animation.keyPath = caCString(value)
+}
+
+@_cdecl("ca_property_animation_get_value_function")
+public func ca_property_animation_get_value_function(_ handle: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    guard let animation: CAPropertyAnimation = caBorrow(handle), let value = animation.valueFunction else {
+        return nil
+    }
+    return caRetain(value)
+}
+
+@_cdecl("ca_property_animation_set_value_function")
+public func ca_property_animation_set_value_function(_ handle: UnsafeMutableRawPointer?, _ valueHandle: UnsafeMutableRawPointer?) {
+    guard let animation: CAPropertyAnimation = caBorrow(handle) else { return }
+    let value: CAValueFunction? = caBorrow(valueHandle)
+    animation.valueFunction = value
 }
 
 @_cdecl("ca_basic_animation_set_from_number")

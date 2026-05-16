@@ -5,10 +5,10 @@
 - Deprecated macOS symbol kept as EXEMPT: `CAOpenGLLayer`.
 
 SDK_PUBLIC_SYMBOLS: 194
-VERIFIED: 125
-GAPS: 68
+VERIFIED: 147
+GAPS: 46
 EXEMPT: 1
-COVERAGE_PCT: 64.8%
+COVERAGE_PCT: 75.8%
 
 ## 🟢 VERIFIED
 | Symbol | Kind | Header | Wrapped by |
@@ -18,6 +18,7 @@ COVERAGE_PCT: 64.8%
 | `CAAnimationGroup` | interface | `CAAnimation.h` | `AnimationGroup` |
 | `CAAnimationRotationMode` | typealias | `CAAnimation.h` | `RotationMode` |
 | `CABasicAnimation` | interface | `CAAnimation.h` | `BasicAnimation` |
+| `CAPropertyAnimation` | interface | `CAAnimation.h` | `PropertyAnimation` |
 | `CAKeyframeAnimation` | interface | `CAAnimation.h` | `KeyframeAnimation` |
 | `CASpringAnimation` | interface | `CAAnimation.h` | `SpringAnimation` |
 | `CATransition` | interface | `CAAnimation.h` | `Transition` |
@@ -66,6 +67,10 @@ COVERAGE_PCT: 64.8%
 | `kCAGradientLayerRadial` | constant | `CAGradientLayer.h` | `GradientType::Radial` |
 | `CALayer` | interface | `CALayer.h` | `Layer` |
 | `CALayerContentsGravity` | typealias | `CALayer.h` | `ContentsGravity` |
+| `CAToneMapMode` | typealias | `CALayer.h` | `ToneMapMode` |
+| `CAToneMapModeAutomatic` | constant | `CALayer.h` | `ToneMapMode::Automatic` |
+| `CAToneMapModeIfSupported` | constant | `CALayer.h` | `ToneMapMode::IfSupported` |
+| `CAToneMapModeNever` | constant | `CALayer.h` | `ToneMapMode::Never` |
 | `kCAGravityBottom` | constant | `CALayer.h` | `ContentsGravity::Bottom` |
 | `kCAGravityBottomLeft` | constant | `CALayer.h` | `ContentsGravity::BottomLeft` |
 | `kCAGravityBottomRight` | constant | `CALayer.h` | `ContentsGravity::BottomRight` |
@@ -85,6 +90,7 @@ COVERAGE_PCT: 64.8%
 | `kCAFillModeForwards` | constant | `CAMediaTiming.h` | `MediaTimingFillMode::Forwards` |
 | `kCAFillModeRemoved` | constant | `CAMediaTiming.h` | `MediaTimingFillMode::Removed` |
 | `CAMediaTimingFunctionName` | typealias | `CAMediaTimingFunction.h` | `TimingFunctionName` |
+| `CAMediaTimingFunction` | interface | `CAMediaTimingFunction.h` | `TimingFunction` |
 | `kCAMediaTimingFunctionDefault` | constant | `CAMediaTimingFunction.h` | `TimingFunctionName::Default` |
 | `kCAMediaTimingFunctionEaseIn` | constant | `CAMediaTimingFunction.h` | `TimingFunctionName::EaseIn` |
 | `kCAMediaTimingFunctionEaseInEaseOut` | constant | `CAMediaTimingFunction.h` | `TimingFunctionName::EaseInEaseOut` |
@@ -92,6 +98,9 @@ COVERAGE_PCT: 64.8%
 | `kCAMediaTimingFunctionLinear` | constant | `CAMediaTimingFunction.h` | `TimingFunctionName::Linear` |
 | `CAMetalDrawable` | protocol | `CAMetalLayer.h` | `MetalDrawable` |
 | `CAMetalLayer` | interface | `CAMetalLayer.h` | `MetalLayer` |
+| `CAMetalDisplayLink` | interface | `CAMetalDisplayLink.h` | `MetalDisplayLink` |
+| `CAMetalDisplayLinkDelegate` | protocol | `CAMetalDisplayLink.h` | `MetalDisplayLink::set_delegate` |
+| `CAMetalDisplayLinkUpdate` | interface | `CAMetalDisplayLink.h` | `MetalDisplayLinkUpdate` |
 | `CARenderer` | interface | `CARenderer.h` | `Renderer` |
 | `kCARendererMetalCommandQueue` | constant | `CARenderer.h` | `Renderer::new(texture, Some(queue))` |
 | `CAReplicatorLayer` | interface | `CAReplicatorLayer.h` | `ReplicatorLayer` |
@@ -138,12 +147,24 @@ COVERAGE_PCT: 64.8%
 | `CATransform3DMakeScale` | function | `CATransform3D.h` | `Transform3D::scale` |
 | `CATransform3DMakeTranslation` | function | `CATransform3D.h` | `Transform3D::translation` |
 | `CATransformLayer` | interface | `CATransformLayer.h` | `TransformLayer` |
+| `CAValueFunction` | interface | `CAValueFunction.h` | `ValueFunction` |
+| `CAValueFunctionName` | typealias | `CAValueFunction.h` | `ValueFunctionName` |
+| `kCAValueFunctionRotateX` | constant | `CAValueFunction.h` | `ValueFunctionName::RotateX` |
+| `kCAValueFunctionRotateY` | constant | `CAValueFunction.h` | `ValueFunctionName::RotateY` |
+| `kCAValueFunctionRotateZ` | constant | `CAValueFunction.h` | `ValueFunctionName::RotateZ` |
+| `kCAValueFunctionScale` | constant | `CAValueFunction.h` | `ValueFunctionName::Scale` |
+| `kCAValueFunctionScaleX` | constant | `CAValueFunction.h` | `ValueFunctionName::ScaleX` |
+| `kCAValueFunctionScaleY` | constant | `CAValueFunction.h` | `ValueFunctionName::ScaleY` |
+| `kCAValueFunctionScaleZ` | constant | `CAValueFunction.h` | `ValueFunctionName::ScaleZ` |
+| `kCAValueFunctionTranslate` | constant | `CAValueFunction.h` | `ValueFunctionName::Translate` |
+| `kCAValueFunctionTranslateX` | constant | `CAValueFunction.h` | `ValueFunctionName::TranslateX` |
+| `kCAValueFunctionTranslateY` | constant | `CAValueFunction.h` | `ValueFunctionName::TranslateY` |
+| `kCAValueFunctionTranslateZ` | constant | `CAValueFunction.h` | `ValueFunctionName::TranslateZ` |
 
 ## 🔴 GAPS
 | Symbol | Kind | Header | Notes |
 | --- | --- | --- | --- |
 | `CAAnimationDelegate` | protocol | `CAAnimation.h` | No delegate bridge for animation lifecycle callbacks. |
-| `CAPropertyAnimation` | interface | `CAAnimation.h` | Key-path/additive/cumulative helpers exist on concrete animation wrappers, but there is no first-class `PropertyAnimation` type. |
 | `CACurrentMediaTime` | function | `CABase.h` | No Rust helper for the global Core Animation media clock. |
 | `CAConstraint` | interface | `CAConstraintLayoutManager.h` | Constraint-based layer layout APIs are not wrapped. |
 | `CAConstraintLayoutManager` | interface | `CAConstraintLayoutManager.h` | Constraint-based layer layout APIs are not wrapped. |
@@ -166,10 +187,6 @@ COVERAGE_PCT: 64.8%
 | `CALayerCornerCurve` | typealias | `CALayer.h` | Layer corner-curve APIs are not exposed. |
 | `CALayerDelegate` | protocol | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
 | `CALayoutManager` | protocol | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `CAToneMapMode` | typealias | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CAToneMapModeAutomatic` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CAToneMapModeIfSupported` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CAToneMapModeNever` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
 | `kCAContentsFormatGray8Uint` | constant | `CALayer.h` | Layer contents-format APIs are not exposed. |
 | `kCAContentsFormatRGBA16Float` | constant | `CALayer.h` | Layer contents-format APIs are not exposed. |
 | `kCAContentsFormatRGBA8Uint` | constant | `CALayer.h` | Layer contents-format APIs are not exposed. |
@@ -181,10 +198,6 @@ COVERAGE_PCT: 64.8%
 | `kCAOnOrderIn` | constant | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
 | `kCAOnOrderOut` | constant | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
 | `kCATransition` | constant | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `CAMediaTimingFunction` | interface | `CAMediaTimingFunction.h` | Only named timing functions are exposed; there is no `CAMediaTimingFunction` object wrapper. |
-| `CAMetalDisplayLink` | interface | `CAMetalDisplayLink.h` | No `CAMetalDisplayLink` / update / delegate bindings. |
-| `CAMetalDisplayLinkDelegate` | protocol | `CAMetalDisplayLink.h` | No `CAMetalDisplayLink` / update / delegate bindings. |
-| `CAMetalDisplayLinkUpdate` | interface | `CAMetalDisplayLink.h` | No `CAMetalDisplayLink` / update / delegate bindings. |
 | `CARemoteLayerClient` | interface | `CARemoteLayerClient.h` | Remote layer client/server APIs are not exposed. |
 | `CARemoteLayerServer` | interface | `CARemoteLayerServer.h` | Remote layer client/server APIs are not exposed. |
 | `kCARendererColorSpace` | constant | `CARenderer.h` | Renderer options do not expose the color-space key. |
@@ -197,19 +210,6 @@ COVERAGE_PCT: 64.8%
 | `CATransform3DRotate` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
 | `CATransform3DScale` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
 | `CATransform3DTranslate` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CAValueFunction` | interface | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `CAValueFunctionName` | typealias | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionRotateX` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionRotateY` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionRotateZ` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionScale` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionScaleX` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionScaleY` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionScaleZ` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionTranslate` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionTranslateX` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionTranslateY` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
-| `kCAValueFunctionTranslateZ` | constant | `CAValueFunction.h` | No `CAValueFunction` wrapper or value-function-name enum is exposed. |
 
 ## ⏭️ EXEMPT
 | Symbol | Kind | Header | Reason | SDK attribute |

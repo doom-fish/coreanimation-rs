@@ -141,6 +141,11 @@ animation_wrapper!(KeyframeAnimation, crate::ffi::ca_keyframe_animation_new);
 animation_wrapper!(SpringAnimation, crate::ffi::ca_spring_animation_new);
 
 #[derive(Debug, Clone)]
+pub struct PropertyAnimation {
+    inner: Animation,
+}
+
+#[derive(Debug, Clone)]
 pub struct AnimationGroup {
     inner: Animation,
 }
@@ -190,6 +195,53 @@ impl Animation {
 
     pub fn set_removed_on_completion(&self, value: bool) {
         unsafe { crate::ffi::ca_animation_set_removed_on_completion(self.as_ptr(), value) };
+    }
+}
+
+impl PropertyAnimation {
+    #[must_use]
+    pub fn new(key_path: Option<&str>) -> Option<Self> {
+        let key_path = key_path.and_then(cstring_from_str);
+        unsafe {
+            Animation::from_raw(crate::ffi::ca_property_animation_new(
+                key_path
+                    .as_ref()
+                    .map_or(core::ptr::null(), |value| value.as_ptr()),
+            ))
+        }
+        .map(|inner| Self { inner })
+    }
+
+    #[must_use]
+    pub fn key_path(&self) -> Option<String> {
+        take_c_string(unsafe {
+            crate::ffi::ca_property_animation_get_key_path(self.as_animation_ptr())
+        })
+    }
+
+    pub fn set_key_path(&self, key_path: &str) {
+        if let Some(key_path) = cstring_from_str(key_path) {
+            unsafe {
+                crate::ffi::ca_property_animation_set_key_path(
+                    self.as_animation_ptr(),
+                    key_path.as_ptr(),
+                )
+            };
+        }
+    }
+}
+
+impl Deref for PropertyAnimation {
+    type Target = Animation;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl AnimationLike for PropertyAnimation {
+    fn as_animation_ptr(&self) -> *mut core::ffi::c_void {
+        self.inner.as_ptr()
     }
 }
 

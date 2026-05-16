@@ -60,3 +60,23 @@ public func ca_layer_set_geometry_flipped(_ handle: UnsafeMutableRawPointer?, _ 
     guard let layer: CALayer = caBorrow(handle) else { return }
     layer.isGeometryFlipped = value
 }
+
+@_cdecl("ca_layer_supports_tone_map_mode")
+public func ca_layer_supports_tone_map_mode() -> Bool {
+    if #available(macOS 15.0, *) {
+        return true
+    }
+    return false
+}
+
+@_cdecl("ca_layer_get_tone_map_mode")
+public func ca_layer_get_tone_map_mode(_ handle: UnsafeMutableRawPointer?) -> Int32 {
+    guard #available(macOS 15.0, *), let layer: CALayer = caBorrow(handle) else { return 0 }
+    return caToneMapModeRaw(layer.toneMapMode)
+}
+
+@_cdecl("ca_layer_set_tone_map_mode")
+public func ca_layer_set_tone_map_mode(_ handle: UnsafeMutableRawPointer?, _ value: Int32) {
+    guard #available(macOS 15.0, *), let layer: CALayer = caBorrow(handle) else { return }
+    layer.toneMapMode = caToneMapMode(value)
+}

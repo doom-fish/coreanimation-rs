@@ -2,7 +2,7 @@
 
 Safe Rust bindings for Apple's [QuartzCore / Core Animation](https://developer.apple.com/documentation/quartzcore) framework on macOS.
 
-> **Status:** v0.2.0 preserves the original v0.1.0 public API and adds additive coverage for `CALayer`, `CAAnimation`, `CAKeyframeAnimation`, `CABasicAnimation`, `CAAnimationGroup`, `CASpringAnimation`, `CATransition`, `CAMediaTiming`, `CATransaction`, `CADisplayLink`, `CAMetalLayer`, `CAGradientLayer`, `CATextLayer`, `CAShapeLayer`, `CATransformLayer`, `CAReplicatorLayer`, `CAEmitterLayer`, `CAScrollLayer`, and `CATiledLayer`.
+> **Status:** v0.2.1 preserves the original v0.1.0 public API and adds additive coverage for `CALayer`, `CAAnimation`, `CAPropertyAnimation`, `CAKeyframeAnimation`, `CABasicAnimation`, `CAAnimationGroup`, `CASpringAnimation`, `CATransition`, `CAMediaTiming`, `CAMediaTimingFunction`, `CATransaction`, `CADisplayLink`, `CAMetalLayer`, `CAMetalDisplayLink`, `CAValueFunction`, `CAGradientLayer`, `CATextLayer`, `CAShapeLayer`, `CATransformLayer`, `CAReplicatorLayer`, `CAEmitterLayer`, `CAScrollLayer`, and `CATiledLayer`.
 >
 > See [`COVERAGE.md`](COVERAGE.md) for the current coverage matrix and remaining QuartzCore gaps.
 
@@ -49,16 +49,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Highlights
 
-- `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `TransformLayer`, `ReplicatorLayer`, `ScrollLayer`, `TiledLayer`, `EmitterLayer`, `EmitterCell`, and `MetalLayer`
-- `Animation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, and `Transition`, plus `TimingFunctionName` and `MediaTimingFillMode`
+- `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `TransformLayer`, `ReplicatorLayer`, `ScrollLayer`, `TiledLayer`, `EmitterLayer`, `EmitterCell`, `MetalLayer`, and `ToneMapMode`
+- `Animation`, `PropertyAnimation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, and `Transition`, plus `TimingFunction`, `TimingFunctionName`, `ValueFunction`, `ValueFunctionName`, and `MediaTimingFillMode`
 - `Transaction` completion blocks, animation defaults, and a `TransactionLockGuard`
-- `DisplayLink` for `CVDisplayLink` and `QuartzDisplayLink` for `CADisplayLink` (`macOS 14+`, headless-safe)
+- `DisplayLink` for `CVDisplayLink`, `QuartzDisplayLink` for `CADisplayLink`, and `MetalDisplayLink` / `MetalDisplayLinkUpdate` for `CAMetalDisplayLink`
 - `Renderer` for offscreen `CARenderer` rendering into `apple-metal` textures
 - `Color` and `Path` helpers for Core Animation content types that `apple-cf` does not wrap yet
 
 ## Examples
 
-The crate now ships with 20 runnable examples: the original offscreen renderer smoke test plus one focused example for each v0.2.0 logical area.
+The crate now ships with 24 runnable examples: the original offscreen renderer smoke test, one focused example for each v0.2.0 logical area, and four v0.2.1 gap-closing examples.
 
 Run any example with:
 
@@ -69,12 +69,12 @@ cargo run --example 11_ca_display_link_smoke
 Representative examples:
 
 - `01_layer_render_smoke` — offscreen `CARenderer` + Metal texture validation
-- `09_ca_media_timing_roundtrip` — `CAMediaTiming` fields and fill modes
 - `11_ca_display_link_smoke` — `QuartzDisplayLink` / `CADisplayLink`
-- `17_ca_replicator_layer_properties` — `CAReplicatorLayer` instance properties
-- `20_ca_tiled_layer_properties` — `CATiledLayer` geometry controls
+- `21_ca_property_animation_value_function` — `CAPropertyAnimation` / `CAValueFunction`
+- `22_ca_timing_function_objects` — `CAMediaTimingFunction` objects on `Animation` / `Transaction`
+- `24_ca_metal_display_link` — `CAMetalDisplayLink` delegate callbacks
 
-Each requested v0.2.0 logical area also has a matching integration test under `tests/`.
+Each v0.2.0 and v0.2.1 logical area also has a matching integration test under `tests/`.
 
 ## License
 

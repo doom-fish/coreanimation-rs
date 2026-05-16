@@ -36,22 +36,4 @@ impl BasicAnimation {
         };
         ok.then_some(value)
     }
-
-    #[must_use]
-    pub fn additive(&self) -> bool {
-        unsafe { crate::ffi::ca_property_animation_get_additive(self.as_animation_ptr()) }
-    }
-
-    pub fn set_additive(&self, value: bool) {
-        unsafe { crate::ffi::ca_property_animation_set_additive(self.as_animation_ptr(), value) };
-    }
-
-    #[must_use]
-    pub fn cumulative(&self) -> bool {
-        unsafe { crate::ffi::ca_property_animation_get_cumulative(self.as_animation_ptr()) }
-    }
-
-    pub fn set_cumulative(&self, value: bool) {
-        unsafe { crate::ffi::ca_property_animation_set_cumulative(self.as_animation_ptr(), value) };
-    }
 }

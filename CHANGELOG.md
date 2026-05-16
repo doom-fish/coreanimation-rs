@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1] - 2026-05-16
+
+- Added `PropertyAnimation`, `ValueFunction`, and `ValueFunctionName`, plus additive/cumulative/value-function helpers across the property-animation wrappers
+- Added `TimingFunction` object wrappers for named and custom cubic Bezier functions plus object-based `Animation` / `Transaction` timing-function accessors
+- Added `ToneMapMode` accessors for `Layer` / `MetalLayer` and a callback-driven `MetalDisplayLink` / `MetalDisplayLinkUpdate` bridge
+- Added 4 focused examples and 4 integration tests covering the new wrappers and refreshed the coverage docs/audit
+
 ## [0.2.0] - 2026-05-16
 
 - Preserved the existing v0.1.0 public API and added additive `ca_*` extension modules plus Swift bridge files for `CALayer`, `CAAnimation`, `CAKeyframeAnimation`, `CABasicAnimation`, `CAAnimationGroup`, `CASpringAnimation`, `CATransition`, `CAMediaTiming`, `CATransaction`, `CADisplayLink`, `CAMetalLayer`, `CAGradientLayer`, `CATextLayer`, `CAShapeLayer`, `CATransformLayer`, `CAReplicatorLayer`, `CAEmitterLayer`, `CAScrollLayer`, and `CATiledLayer`

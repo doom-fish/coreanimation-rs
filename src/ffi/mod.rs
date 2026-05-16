@@ -15,6 +15,10 @@ pub type CVDisplayLinkOutputCallback = Option<
 #[allow(clippy::upper_case_acronyms)]
 pub type TransactionCompletionCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
 
+#[allow(clippy::upper_case_acronyms)]
+pub type MetalDisplayLinkUpdateCallback =
+    Option<unsafe extern "C" fn(context: *mut c_void, update_handle: *mut c_void)>;
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct CVSMPTETime {
@@ -247,9 +251,12 @@ unsafe extern "C" {
     pub fn ca_animation_get_removed_on_completion(handle: *mut c_void) -> bool;
     pub fn ca_animation_set_removed_on_completion(handle: *mut c_void, value: bool);
 
+    pub fn ca_property_animation_new(key_path: *const c_char) -> *mut c_void;
     pub fn ca_basic_animation_new(key_path: *const c_char) -> *mut c_void;
     pub fn ca_property_animation_get_key_path(handle: *mut c_void) -> *mut c_char;
     pub fn ca_property_animation_set_key_path(handle: *mut c_void, value: *const c_char);
+    pub fn ca_property_animation_get_value_function(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_property_animation_set_value_function(handle: *mut c_void, value_handle: *mut c_void);
     pub fn ca_basic_animation_set_from_number(handle: *mut c_void, value: f64);
     pub fn ca_basic_animation_set_to_number(handle: *mut c_void, value: f64);
     pub fn ca_basic_animation_set_by_number(handle: *mut c_void, value: f64);
@@ -330,6 +337,7 @@ unsafe extern "C" {
         callback: TransactionCompletionCallback,
         context: *mut c_void,
     );
+    pub fn ca_run_current_run_loop(seconds: f64);
 
     pub fn ca_layer_get_z_position(handle: *mut c_void) -> f64;
     pub fn ca_layer_set_z_position(handle: *mut c_void, value: f64);
@@ -342,7 +350,12 @@ unsafe extern "C" {
     pub fn ca_layer_set_double_sided(handle: *mut c_void, value: bool);
     pub fn ca_layer_get_geometry_flipped(handle: *mut c_void) -> bool;
     pub fn ca_layer_set_geometry_flipped(handle: *mut c_void, value: bool);
+    pub fn ca_layer_supports_tone_map_mode() -> bool;
+    pub fn ca_layer_get_tone_map_mode(handle: *mut c_void) -> i32;
+    pub fn ca_layer_set_tone_map_mode(handle: *mut c_void, value: i32);
 
+    pub fn ca_animation_get_timing_function(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_animation_set_timing_function(handle: *mut c_void, value_handle: *mut c_void);
     pub fn ca_animation_get_timing_function_name(handle: *mut c_void) -> i32;
     pub fn ca_animation_set_timing_function_name(handle: *mut c_void, value: i32);
     pub fn ca_animation_get_begin_time(handle: *mut c_void) -> f64;
@@ -363,6 +376,21 @@ unsafe extern "C" {
     pub fn ca_property_animation_set_additive(handle: *mut c_void, value: bool);
     pub fn ca_property_animation_get_cumulative(handle: *mut c_void) -> bool;
     pub fn ca_property_animation_set_cumulative(handle: *mut c_void, value: bool);
+    pub fn ca_value_function_new(value: i32) -> *mut c_void;
+    pub fn ca_value_function_get_name(handle: *mut c_void) -> i32;
+    pub fn ca_timing_function_new_named(value: i32) -> *mut c_void;
+    pub fn ca_timing_function_new_control_points(
+        c1x: f32,
+        c1y: f32,
+        c2x: f32,
+        c2y: f32,
+    ) -> *mut c_void;
+    pub fn ca_timing_function_get_name(handle: *mut c_void) -> i32;
+    pub fn ca_timing_function_get_control_point(
+        handle: *mut c_void,
+        index: usize,
+        out_values: *mut c_void,
+    ) -> bool;
 
     pub fn ca_keyframe_animation_set_timing_function_names(
         handle: *mut c_void,
@@ -407,6 +435,8 @@ unsafe extern "C" {
 
     pub fn ca_transaction_lock();
     pub fn ca_transaction_unlock();
+    pub fn ca_transaction_get_animation_timing_function() -> *mut c_void;
+    pub fn ca_transaction_set_animation_timing_function(value_handle: *mut c_void);
     pub fn ca_transaction_get_animation_timing_function_name() -> i32;
     pub fn ca_transaction_set_animation_timing_function_name(value: i32);
 
@@ -419,6 +449,26 @@ unsafe extern "C" {
     pub fn ca_quartz_display_link_get_timestamp(handle: *mut c_void) -> f64;
     pub fn ca_quartz_display_link_get_duration(handle: *mut c_void) -> f64;
     pub fn ca_quartz_display_link_get_target_timestamp(handle: *mut c_void) -> f64;
+
+    pub fn ca_metal_display_link_is_available() -> bool;
+    pub fn ca_metal_display_link_new(layer_handle: *mut c_void) -> *mut c_void;
+    pub fn ca_metal_display_link_add_to_current_run_loop(handle: *mut c_void);
+    pub fn ca_metal_display_link_remove_from_current_run_loop(handle: *mut c_void);
+    pub fn ca_metal_display_link_invalidate(handle: *mut c_void);
+    pub fn ca_metal_display_link_is_paused(handle: *mut c_void) -> bool;
+    pub fn ca_metal_display_link_set_paused(handle: *mut c_void, value: bool);
+    pub fn ca_metal_display_link_get_preferred_frame_latency(handle: *mut c_void) -> f32;
+    pub fn ca_metal_display_link_set_preferred_frame_latency(handle: *mut c_void, value: f32);
+    pub fn ca_metal_display_link_set_delegate(
+        handle: *mut c_void,
+        callback: MetalDisplayLinkUpdateCallback,
+        context: *mut c_void,
+    );
+    pub fn ca_metal_display_link_update_get_drawable(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_metal_display_link_update_get_target_timestamp(handle: *mut c_void) -> f64;
+    pub fn ca_metal_display_link_update_get_target_presentation_timestamp(
+        handle: *mut c_void,
+    ) -> f64;
 
     pub fn ca_metal_layer_get_framebuffer_only(handle: *mut c_void) -> bool;
     pub fn ca_metal_layer_set_framebuffer_only(handle: *mut c_void, value: bool);

@@ -11,6 +11,18 @@ public func ca_transaction_unlock() {
     CATransaction.unlock()
 }
 
+@_cdecl("ca_transaction_get_animation_timing_function")
+public func ca_transaction_get_animation_timing_function() -> UnsafeMutableRawPointer? {
+    guard let function = CATransaction.animationTimingFunction() else { return nil }
+    return caRetain(function)
+}
+
+@_cdecl("ca_transaction_set_animation_timing_function")
+public func ca_transaction_set_animation_timing_function(_ valueHandle: UnsafeMutableRawPointer?) {
+    let value: CAMediaTimingFunction? = caBorrow(valueHandle)
+    CATransaction.setAnimationTimingFunction(value)
+}
+
 @_cdecl("ca_transaction_get_animation_timing_function_name")
 public func ca_transaction_get_animation_timing_function_name() -> Int32 {
     caTimingFunctionNameRaw(CATransaction.animationTimingFunction())
