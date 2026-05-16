@@ -2,7 +2,9 @@
 
 Safe Rust bindings for Apple's [QuartzCore / Core Animation](https://developer.apple.com/documentation/quartzcore) framework on macOS.
 
-> **Status:** v0.1.0 covers `CALayer` and key layer subclasses, particle emitters, `CAMetalLayer`, `CARenderer`, `CVDisplayLink`, transactions, and the core animation classes needed to drive layer-based rendering from Rust.
+> **Status:** v0.2.0 preserves the original v0.1.0 public API and adds additive coverage for `CALayer`, `CAAnimation`, `CAKeyframeAnimation`, `CABasicAnimation`, `CAAnimationGroup`, `CASpringAnimation`, `CATransition`, `CAMediaTiming`, `CATransaction`, `CADisplayLink`, `CAMetalLayer`, `CAGradientLayer`, `CATextLayer`, `CAShapeLayer`, `CATransformLayer`, `CAReplicatorLayer`, `CAEmitterLayer`, `CAScrollLayer`, and `CATiledLayer`.
+>
+> See [`COVERAGE.md`](COVERAGE.md) for the current coverage matrix and remaining QuartzCore gaps.
 
 ## Quick start
 
@@ -47,22 +49,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Highlights
 
-- `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `EmitterLayer`, `EmitterCell`, and `MetalLayer`
-- `Color` and `Path` helpers for common Core Animation content types that `apple-cf` does not wrap yet
-- `Animation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, and `Transition`
-- `Transaction` completion blocks and animation defaults
-- `DisplayLink` built on `CVDisplayLink` for macOS vsync callbacks
+- `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `TransformLayer`, `ReplicatorLayer`, `ScrollLayer`, `TiledLayer`, `EmitterLayer`, `EmitterCell`, and `MetalLayer`
+- `Animation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, and `Transition`, plus `TimingFunctionName` and `MediaTimingFillMode`
+- `Transaction` completion blocks, animation defaults, and a `TransactionLockGuard`
+- `DisplayLink` for `CVDisplayLink` and `QuartzDisplayLink` for `CADisplayLink` (`macOS 14+`, headless-safe)
 - `Renderer` for offscreen `CARenderer` rendering into `apple-metal` textures
+- `Color` and `Path` helpers for Core Animation content types that `apple-cf` does not wrap yet
 
-## Smoke example
+## Examples
 
-Run the offscreen render smoke test with:
+The crate now ships with 20 runnable examples: the original offscreen renderer smoke test plus one focused example for each v0.2.0 logical area.
+
+Run any example with:
 
 ```bash
-cargo run --example 01_layer_render_smoke
+cargo run --example 11_ca_display_link_smoke
 ```
 
-It creates a 100×100 red `CALayer`, renders it into a Metal texture with `CARenderer`, reads the pixel bytes back, and prints a success banner after verifying non-zero pixel data.
+Representative examples:
+
+- `01_layer_render_smoke` — offscreen `CARenderer` + Metal texture validation
+- `09_ca_media_timing_roundtrip` — `CAMediaTiming` fields and fill modes
+- `11_ca_display_link_smoke` — `QuartzDisplayLink` / `CADisplayLink`
+- `17_ca_replicator_layer_properties` — `CAReplicatorLayer` instance properties
+- `20_ca_tiled_layer_properties` — `CATiledLayer` geometry controls
+
+Each requested v0.2.0 logical area also has a matching integration test under `tests/`.
 
 ## License
 

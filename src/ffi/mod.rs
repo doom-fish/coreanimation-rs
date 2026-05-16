@@ -331,6 +331,186 @@ unsafe extern "C" {
         context: *mut c_void,
     );
 
+    pub fn ca_layer_get_z_position(handle: *mut c_void) -> f64;
+    pub fn ca_layer_set_z_position(handle: *mut c_void, value: f64);
+    pub fn ca_layer_get_anchor_point_z(handle: *mut c_void) -> f64;
+    pub fn ca_layer_set_anchor_point_z(handle: *mut c_void, value: f64);
+    pub fn ca_layer_get_sublayer_transform(handle: *mut c_void, out_transform: *mut c_void)
+        -> bool;
+    pub fn ca_layer_set_sublayer_transform(handle: *mut c_void, transform: *const c_void);
+    pub fn ca_layer_get_double_sided(handle: *mut c_void) -> bool;
+    pub fn ca_layer_set_double_sided(handle: *mut c_void, value: bool);
+    pub fn ca_layer_get_geometry_flipped(handle: *mut c_void) -> bool;
+    pub fn ca_layer_set_geometry_flipped(handle: *mut c_void, value: bool);
+
+    pub fn ca_animation_get_timing_function_name(handle: *mut c_void) -> i32;
+    pub fn ca_animation_set_timing_function_name(handle: *mut c_void, value: i32);
+    pub fn ca_animation_get_begin_time(handle: *mut c_void) -> f64;
+    pub fn ca_animation_set_begin_time(handle: *mut c_void, value: f64);
+    pub fn ca_animation_get_speed(handle: *mut c_void) -> f32;
+    pub fn ca_animation_set_speed(handle: *mut c_void, value: f32);
+    pub fn ca_animation_get_time_offset(handle: *mut c_void) -> f64;
+    pub fn ca_animation_set_time_offset(handle: *mut c_void, value: f64);
+    pub fn ca_animation_get_repeat_duration(handle: *mut c_void) -> f64;
+    pub fn ca_animation_set_repeat_duration(handle: *mut c_void, value: f64);
+    pub fn ca_animation_get_fill_mode(handle: *mut c_void) -> i32;
+    pub fn ca_animation_set_fill_mode(handle: *mut c_void, value: i32);
+
+    pub fn ca_basic_animation_get_from_number(handle: *mut c_void, out_value: *mut c_void) -> bool;
+    pub fn ca_basic_animation_get_to_number(handle: *mut c_void, out_value: *mut c_void) -> bool;
+    pub fn ca_basic_animation_get_by_number(handle: *mut c_void, out_value: *mut c_void) -> bool;
+    pub fn ca_property_animation_get_additive(handle: *mut c_void) -> bool;
+    pub fn ca_property_animation_set_additive(handle: *mut c_void, value: bool);
+    pub fn ca_property_animation_get_cumulative(handle: *mut c_void) -> bool;
+    pub fn ca_property_animation_set_cumulative(handle: *mut c_void, value: bool);
+
+    pub fn ca_keyframe_animation_set_timing_function_names(
+        handle: *mut c_void,
+        values: *const i32,
+        count: usize,
+    );
+    pub fn ca_keyframe_animation_timing_function_name_count(handle: *mut c_void) -> usize;
+    pub fn ca_keyframe_animation_timing_function_name_at(handle: *mut c_void, index: usize) -> i32;
+    pub fn ca_keyframe_animation_set_tension_values(
+        handle: *mut c_void,
+        values: *const f64,
+        count: usize,
+    );
+    pub fn ca_keyframe_animation_tension_value_count(handle: *mut c_void) -> usize;
+    pub fn ca_keyframe_animation_tension_value_at(handle: *mut c_void, index: usize) -> f64;
+    pub fn ca_keyframe_animation_set_continuity_values(
+        handle: *mut c_void,
+        values: *const f64,
+        count: usize,
+    );
+    pub fn ca_keyframe_animation_continuity_value_count(handle: *mut c_void) -> usize;
+    pub fn ca_keyframe_animation_continuity_value_at(handle: *mut c_void, index: usize) -> f64;
+    pub fn ca_keyframe_animation_set_bias_values(
+        handle: *mut c_void,
+        values: *const f64,
+        count: usize,
+    );
+    pub fn ca_keyframe_animation_bias_value_count(handle: *mut c_void) -> usize;
+    pub fn ca_keyframe_animation_bias_value_at(handle: *mut c_void, index: usize) -> f64;
+
+    pub fn ca_animation_group_append_animation(handle: *mut c_void, animation_handle: *mut c_void);
+    pub fn ca_animation_group_clear_animations(handle: *mut c_void);
+    pub fn ca_spring_animation_configure(
+        handle: *mut c_void,
+        mass: f64,
+        stiffness: f64,
+        damping: f64,
+        initial_velocity: f64,
+    );
+    pub fn ca_transition_has_subtype(handle: *mut c_void) -> bool;
+    pub fn ca_transition_clear_subtype(handle: *mut c_void);
+
+    pub fn ca_transaction_lock();
+    pub fn ca_transaction_unlock();
+    pub fn ca_transaction_get_animation_timing_function_name() -> i32;
+    pub fn ca_transaction_set_animation_timing_function_name(value: i32);
+
+    pub fn ca_quartz_display_link_new_main_screen() -> *mut c_void;
+    pub fn ca_quartz_display_link_add_to_main_run_loop(handle: *mut c_void);
+    pub fn ca_quartz_display_link_remove_from_main_run_loop(handle: *mut c_void);
+    pub fn ca_quartz_display_link_invalidate(handle: *mut c_void);
+    pub fn ca_quartz_display_link_is_paused(handle: *mut c_void) -> bool;
+    pub fn ca_quartz_display_link_set_paused(handle: *mut c_void, paused: bool);
+    pub fn ca_quartz_display_link_get_timestamp(handle: *mut c_void) -> f64;
+    pub fn ca_quartz_display_link_get_duration(handle: *mut c_void) -> f64;
+    pub fn ca_quartz_display_link_get_target_timestamp(handle: *mut c_void) -> f64;
+
+    pub fn ca_metal_layer_get_framebuffer_only(handle: *mut c_void) -> bool;
+    pub fn ca_metal_layer_set_framebuffer_only(handle: *mut c_void, value: bool);
+    pub fn ca_metal_layer_get_maximum_drawable_count(handle: *mut c_void) -> usize;
+    pub fn ca_metal_layer_set_maximum_drawable_count(handle: *mut c_void, value: usize);
+    pub fn ca_metal_layer_get_presents_with_transaction(handle: *mut c_void) -> bool;
+    pub fn ca_metal_layer_set_presents_with_transaction(handle: *mut c_void, value: bool);
+    pub fn ca_metal_layer_get_display_sync_enabled(handle: *mut c_void) -> bool;
+    pub fn ca_metal_layer_set_display_sync_enabled(handle: *mut c_void, value: bool);
+    pub fn ca_metal_layer_get_allows_next_drawable_timeout(handle: *mut c_void) -> bool;
+    pub fn ca_metal_layer_set_allows_next_drawable_timeout(handle: *mut c_void, value: bool);
+
+    pub fn ca_gradient_layer_get_color_components_at(
+        handle: *mut c_void,
+        index: usize,
+        out_components: *mut c_void,
+    ) -> bool;
+
+    pub fn ca_text_layer_get_wrapped(handle: *mut c_void) -> bool;
+    pub fn ca_text_layer_set_wrapped(handle: *mut c_void, value: bool);
+    pub fn ca_text_layer_get_allows_font_subpixel_quantization(handle: *mut c_void) -> bool;
+    pub fn ca_text_layer_set_allows_font_subpixel_quantization(handle: *mut c_void, value: bool);
+
+    pub fn ca_shape_layer_get_fill_rule(handle: *mut c_void) -> i32;
+    pub fn ca_shape_layer_set_fill_rule(handle: *mut c_void, value: i32);
+    pub fn ca_shape_layer_get_stroke_start(handle: *mut c_void) -> f64;
+    pub fn ca_shape_layer_set_stroke_start(handle: *mut c_void, value: f64);
+    pub fn ca_shape_layer_get_stroke_end(handle: *mut c_void) -> f64;
+    pub fn ca_shape_layer_set_stroke_end(handle: *mut c_void, value: f64);
+    pub fn ca_shape_layer_get_line_dash_phase(handle: *mut c_void) -> f64;
+    pub fn ca_shape_layer_set_line_dash_phase(handle: *mut c_void, value: f64);
+
+    pub fn ca_transform_layer_new() -> *mut c_void;
+
+    pub fn ca_replicator_layer_new() -> *mut c_void;
+    pub fn ca_replicator_layer_get_instance_count(handle: *mut c_void) -> isize;
+    pub fn ca_replicator_layer_set_instance_count(handle: *mut c_void, value: isize);
+    pub fn ca_replicator_layer_get_preserves_depth(handle: *mut c_void) -> bool;
+    pub fn ca_replicator_layer_set_preserves_depth(handle: *mut c_void, value: bool);
+    pub fn ca_replicator_layer_get_instance_delay(handle: *mut c_void) -> f64;
+    pub fn ca_replicator_layer_set_instance_delay(handle: *mut c_void, value: f64);
+    pub fn ca_replicator_layer_get_instance_transform(
+        handle: *mut c_void,
+        out_transform: *mut c_void,
+    ) -> bool;
+    pub fn ca_replicator_layer_set_instance_transform(
+        handle: *mut c_void,
+        transform: *const c_void,
+    );
+    pub fn ca_replicator_layer_set_instance_color(handle: *mut c_void, color_handle: *mut c_void);
+    pub fn ca_replicator_layer_get_instance_color(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_replicator_layer_get_instance_red_offset(handle: *mut c_void) -> f32;
+    pub fn ca_replicator_layer_set_instance_red_offset(handle: *mut c_void, value: f32);
+    pub fn ca_replicator_layer_get_instance_green_offset(handle: *mut c_void) -> f32;
+    pub fn ca_replicator_layer_set_instance_green_offset(handle: *mut c_void, value: f32);
+    pub fn ca_replicator_layer_get_instance_blue_offset(handle: *mut c_void) -> f32;
+    pub fn ca_replicator_layer_set_instance_blue_offset(handle: *mut c_void, value: f32);
+    pub fn ca_replicator_layer_get_instance_alpha_offset(handle: *mut c_void) -> f32;
+    pub fn ca_replicator_layer_set_instance_alpha_offset(handle: *mut c_void, value: f32);
+
+    pub fn ca_emitter_layer_get_emitter_z_position(handle: *mut c_void) -> f64;
+    pub fn ca_emitter_layer_set_emitter_z_position(handle: *mut c_void, value: f64);
+    pub fn ca_emitter_layer_get_emitter_depth(handle: *mut c_void) -> f64;
+    pub fn ca_emitter_layer_set_emitter_depth(handle: *mut c_void, value: f64);
+    pub fn ca_emitter_layer_get_preserves_depth(handle: *mut c_void) -> bool;
+    pub fn ca_emitter_layer_set_preserves_depth(handle: *mut c_void, value: bool);
+    pub fn ca_emitter_layer_get_spin(handle: *mut c_void) -> f32;
+    pub fn ca_emitter_layer_set_spin(handle: *mut c_void, value: f32);
+    pub fn ca_emitter_layer_get_seed(handle: *mut c_void) -> u32;
+    pub fn ca_emitter_layer_set_seed(handle: *mut c_void, value: u32);
+
+    pub fn ca_scroll_layer_new() -> *mut c_void;
+    pub fn ca_scroll_layer_get_scroll_mode(handle: *mut c_void) -> i32;
+    pub fn ca_scroll_layer_set_scroll_mode(handle: *mut c_void, value: i32);
+    pub fn ca_scroll_layer_get_visible_rect(handle: *mut c_void, out_rect: *mut c_void) -> bool;
+    pub fn ca_scroll_layer_scroll_to_point(handle: *mut c_void, x: f64, y: f64);
+    pub fn ca_scroll_layer_scroll_to_rect(
+        handle: *mut c_void,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    );
+
+    pub fn ca_tiled_layer_new() -> *mut c_void;
+    pub fn ca_tiled_layer_get_levels_of_detail(handle: *mut c_void) -> usize;
+    pub fn ca_tiled_layer_set_levels_of_detail(handle: *mut c_void, value: usize);
+    pub fn ca_tiled_layer_get_levels_of_detail_bias(handle: *mut c_void) -> usize;
+    pub fn ca_tiled_layer_set_levels_of_detail_bias(handle: *mut c_void, value: usize);
+    pub fn ca_tiled_layer_get_tile_size(handle: *mut c_void, out_size: *mut c_void) -> bool;
+    pub fn ca_tiled_layer_set_tile_size(handle: *mut c_void, width: f64, height: f64);
+
     pub fn CVDisplayLinkCreateWithActiveCGDisplays(display_link_out: *mut *mut c_void) -> i32;
     pub fn CVDisplayLinkSetCurrentCGDisplay(display_link: *mut c_void, display_id: u32) -> i32;
     pub fn CVDisplayLinkGetCurrentCGDisplay(display_link: *mut c_void) -> u32;

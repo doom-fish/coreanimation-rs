@@ -17,6 +17,25 @@
 mod private;
 
 pub mod animation;
+pub mod ca_animation;
+pub mod ca_animation_group;
+pub mod ca_basic_animation;
+pub mod ca_display_link;
+pub mod ca_emitter_layer;
+pub mod ca_gradient_layer;
+pub mod ca_keyframe_animation;
+pub mod ca_layer;
+pub mod ca_media_timing;
+pub mod ca_metal_layer;
+pub mod ca_replicator_layer;
+pub mod ca_scroll_layer;
+pub mod ca_shape_layer;
+pub mod ca_spring_animation;
+pub mod ca_text_layer;
+pub mod ca_tiled_layer;
+pub mod ca_transaction;
+pub mod ca_transform_layer;
+pub mod ca_transition;
 pub mod color;
 pub mod display_link;
 pub mod emitter;
@@ -33,6 +52,14 @@ pub use animation::{
     KeyframeAnimation, RotationMode, SpringAnimation, Transition, TransitionSubtype,
     TransitionType,
 };
+pub use ca_display_link::QuartzDisplayLink;
+pub use ca_media_timing::{MediaTimingFillMode, TimingFunctionName};
+pub use ca_replicator_layer::ReplicatorLayer;
+pub use ca_scroll_layer::{ScrollLayer, ScrollMode};
+pub use ca_shape_layer::ShapeFillRule;
+pub use ca_tiled_layer::TiledLayer;
+pub use ca_transaction::TransactionLockGuard;
+pub use ca_transform_layer::TransformLayer;
 pub use color::Color;
 pub use display_link::{CVReturn, CVSMPTETime, CVTime, CVTimeStamp, DisplayLink};
 pub use emitter::{EmitterCell, EmitterLayer, EmitterMode, EmitterRenderMode, EmitterShape};
@@ -54,8 +81,10 @@ pub mod prelude {
         BasicAnimation, CVReturn, CVSMPTETime, CVTime, CVTimeStamp, Color, ContentsGravity,
         CoreAnimationError, DisplayLink, EmitterCell, EmitterLayer, EmitterMode, EmitterRenderMode,
         EmitterShape, GradientLayer, GradientType, KeyframeAnimation, Layer, LayerLike, LineCap,
-        LineJoin, MetalDrawable, MetalLayer, Path, Renderer, RotationMode, ShapeLayer,
-        SpringAnimation, TextAlignmentMode, TextLayer, TextTruncationMode, Transaction,
-        TransactionCompletion, Transform3D, Transition, TransitionSubtype, TransitionType,
+        LineJoin, MediaTimingFillMode, MetalDrawable, MetalLayer, Path, QuartzDisplayLink,
+        Renderer, ReplicatorLayer, RotationMode, ScrollLayer, ScrollMode, ShapeFillRule,
+        ShapeLayer, SpringAnimation, TextAlignmentMode, TextLayer, TextTruncationMode, TiledLayer,
+        TimingFunctionName, Transaction, TransactionCompletion, TransactionLockGuard, Transform3D,
+        TransformLayer, Transition, TransitionSubtype, TransitionType,
     };
 }

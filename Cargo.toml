@@ -1,6 +1,6 @@
 [package]
 name = "coreanimation-rs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/doom-fish/coreanimation-rs"
@@ -22,6 +22,7 @@ include = [
     "README.md",
     "LICENSE-*",
     "CHANGELOG.md",
+    "COVERAGE.md",
 ]
 
 [lints.rust]
@@ -41,8 +42,8 @@ cargo-clippy = []
 
 [dependencies]
 libc = "0.2"
-apple-cf = { path = "../apple-cf-rs", version = ">=0.4.0, <0.6", features = ["cg"] }
-apple-metal = { path = "../apple-metal-rs", version = ">=0.5.0, <0.6" }
+apple-cf = { version = ">=0.4.0, <0.6", features = ["cg"] }
+apple-metal = { version = ">=0.5.0, <0.6" }
 
 [package.metadata.docs.rs]
 all-features = true
