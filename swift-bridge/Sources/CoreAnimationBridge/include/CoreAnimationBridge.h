@@ -1,0 +1,3 @@
+#ifndef COREAMINATION_BRIDGE_H
+#define COREAMINATION_BRIDGE_H
+#endif
