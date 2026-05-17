@@ -2,15 +2,16 @@ use std::error::Error;
 
 use apple_metal::MetalDevice;
 use coreanimation::{
-    current_media_time, Animation, AnimationDelegate, FrameRateRange, MetalDisplayLink,
-    MetalLayer, CGSize,
+    current_media_time, Animation, AnimationDelegate, CGSize, FrameRateRange, MetalDisplayLink,
+    MetalLayer,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
     let animation = Animation::new().ok_or("failed to create animation")?;
     let mut delegate = AnimationDelegate::new().ok_or("failed to create delegate")?;
     delegate.set_did_start(|_animation| println!("animation delegate installed"));
-    delegate.set_did_stop(|_animation, finished| println!("animation delegate cleared: {finished}"));
+    delegate
+        .set_did_stop(|_animation, finished| println!("animation delegate cleared: {finished}"));
     animation.set_delegate(Some(&delegate));
 
     let range = FrameRateRange::make(30.0, 120.0, 60.0);

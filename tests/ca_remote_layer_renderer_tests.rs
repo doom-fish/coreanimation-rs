@@ -1,7 +1,7 @@
 use apple_metal::{pixel_format, storage_mode, texture_usage, MetalDevice, TextureDescriptor};
 use coreanimation::{
-    read_texture_bytes, CGColorSpace, Color, Layer, CGRect, RemoteLayerClient,
-    RemoteLayerServer, Renderer,
+    read_texture_bytes, CGColorSpace, CGRect, Color, Layer, RemoteLayerClient, RemoteLayerServer,
+    Renderer,
 };
 
 const WIDTH: usize = 64;
@@ -42,8 +42,8 @@ fn caremotelayer_and_carenderer_color_space_round_trip() {
         })
         .expect("texture");
     let color_space = CGColorSpace::display_p3();
-    let renderer =
-        Renderer::new_with_color_space(&texture, Some(&queue), Some(&color_space)).expect("renderer");
+    let renderer = Renderer::new_with_color_space(&texture, Some(&queue), Some(&color_space))
+        .expect("renderer");
     renderer.set_layer(Some(&layer));
     renderer.set_bounds(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64));
     renderer.render_at_time(0.0);

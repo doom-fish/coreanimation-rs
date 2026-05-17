@@ -6,7 +6,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let layer = MetalLayer::new().ok_or("failed to create metal layer")?;
     let color_space = CGColorSpace::display_p3();
     layer.set_colorspace(Some(&color_space));
-    let round_tripped = layer.colorspace().ok_or("failed to round-trip colorspace")?;
+    let round_tripped = layer
+        .colorspace()
+        .ok_or("failed to round-trip colorspace")?;
     assert_eq!(
         round_tripped.number_of_components(),
         color_space.number_of_components()

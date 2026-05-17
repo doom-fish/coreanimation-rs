@@ -2,8 +2,8 @@ use std::error::Error;
 
 use apple_metal::{pixel_format, storage_mode, texture_usage, MetalDevice, TextureDescriptor};
 use coreanimation::{
-    read_texture_bytes, CGColorSpace, Color, Layer, CGRect, RemoteLayerClient,
-    RemoteLayerServer, Renderer,
+    read_texture_bytes, CGColorSpace, CGRect, Color, Layer, RemoteLayerClient, RemoteLayerServer,
+    Renderer,
 };
 
 const WIDTH: usize = 64;

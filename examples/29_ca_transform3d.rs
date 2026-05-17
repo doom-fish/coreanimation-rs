@@ -12,7 +12,11 @@ fn main() {
         .scaled(2.0, 3.0, 1.0)
         .translated(-1.0, 2.0, 0.0);
     let identity = combined.concat(combined.inverted());
-    for (left, right) in identity.as_array().into_iter().zip(Transform3D::identity().as_array()) {
+    for (left, right) in identity
+        .as_array()
+        .into_iter()
+        .zip(Transform3D::identity().as_array())
+    {
         assert!((left - right).abs() < 1e-9, "{left} != {right}");
     }
 

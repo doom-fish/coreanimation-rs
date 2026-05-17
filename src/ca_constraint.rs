@@ -97,7 +97,9 @@ impl Constraint {
 
     #[must_use]
     pub fn attribute(&self) -> ConstraintAttribute {
-        ConstraintAttribute::from_raw(unsafe { crate::ffi::ca_constraint_get_attribute(self.as_ptr()) })
+        ConstraintAttribute::from_raw(unsafe {
+            crate::ffi::ca_constraint_get_attribute(self.as_ptr())
+        })
     }
 
     #[must_use]

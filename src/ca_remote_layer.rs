@@ -17,7 +17,11 @@ impl RemoteLayerServer {
 
     #[must_use]
     pub fn layer_with_client_id(client_id: u32) -> Option<Layer> {
-        unsafe { Layer::from_raw(crate::ffi::ca_remote_layer_server_layer_with_client_id(client_id)) }
+        unsafe {
+            Layer::from_raw(crate::ffi::ca_remote_layer_server_layer_with_client_id(
+                client_id,
+            ))
+        }
     }
 }
 

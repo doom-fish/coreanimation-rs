@@ -6,9 +6,9 @@ use std::sync::{
 };
 
 use coreanimation::{
-    Action, AutoresizingMask, Constraint, ConstraintAttribute, ConstraintLayoutManager,
-    ContentsFilter, ContentsFormat, CornerCurve, CornerMask, DynamicRange,
-    EdgeAntialiasingMask, Layer, LayerActionKeys, LayerDelegate, Transition, CGRect,
+    Action, AutoresizingMask, CGRect, Constraint, ConstraintAttribute, ConstraintLayoutManager,
+    ContentsFilter, ContentsFormat, CornerCurve, CornerMask, DynamicRange, EdgeAntialiasingMask,
+    Layer, LayerActionKeys, LayerDelegate, Transition,
 };
 
 #[test]
@@ -22,38 +22,28 @@ fn calayer_advanced_surface_round_trip() {
     );
     layer.set_masked_corners(CornerMask::MIN_X_MIN_Y | CornerMask::MAX_X_MAX_Y);
     layer.set_corner_curve(CornerCurve::Continuous);
-    layer.set_autoresizing_mask(
-        AutoresizingMask::WIDTH_SIZABLE | AutoresizingMask::MIN_Y_MARGIN,
-    );
+    layer.set_autoresizing_mask(AutoresizingMask::WIDTH_SIZABLE | AutoresizingMask::MIN_Y_MARGIN);
     layer.set_name("advanced-layer");
 
     assert_eq!(layer.contents_format(), ContentsFormat::Gray8Uint);
     assert_eq!(layer.minification_filter(), ContentsFilter::Linear);
     assert_eq!(layer.magnification_filter(), ContentsFilter::Trilinear);
-    assert!(
-        layer
-            .edge_antialiasing_mask()
-            .contains(EdgeAntialiasingMask::LEFT_EDGE)
-    );
-    assert!(
-        layer
-            .edge_antialiasing_mask()
-            .contains(EdgeAntialiasingMask::TOP_EDGE)
-    );
+    assert!(layer
+        .edge_antialiasing_mask()
+        .contains(EdgeAntialiasingMask::LEFT_EDGE));
+    assert!(layer
+        .edge_antialiasing_mask()
+        .contains(EdgeAntialiasingMask::TOP_EDGE));
     assert!(layer.masked_corners().contains(CornerMask::MIN_X_MIN_Y));
     assert!(layer.masked_corners().contains(CornerMask::MAX_X_MAX_Y));
     assert_eq!(layer.corner_curve(), CornerCurve::Continuous);
     assert!(Layer::corner_curve_expansion_factor(CornerCurve::Continuous) > 0.0);
-    assert!(
-        layer
-            .autoresizing_mask()
-            .contains(AutoresizingMask::WIDTH_SIZABLE)
-    );
-    assert!(
-        layer
-            .autoresizing_mask()
-            .contains(AutoresizingMask::MIN_Y_MARGIN)
-    );
+    assert!(layer
+        .autoresizing_mask()
+        .contains(AutoresizingMask::WIDTH_SIZABLE));
+    assert!(layer
+        .autoresizing_mask()
+        .contains(AutoresizingMask::MIN_Y_MARGIN));
     assert_eq!(layer.name().as_deref(), Some("advanced-layer"));
 
     if Layer::supports_preferred_dynamic_range() {
@@ -77,7 +67,10 @@ fn calayer_advanced_surface_round_trip() {
     assert_eq!(constraints.len(), 1);
     assert_eq!(constraints[0].attribute(), ConstraintAttribute::Width);
     assert_eq!(constraints[0].source_name().as_deref(), Some("superlayer"));
-    assert_eq!(constraints[0].source_attribute(), ConstraintAttribute::Width);
+    assert_eq!(
+        constraints[0].source_attribute(),
+        ConstraintAttribute::Width
+    );
     assert_eq!(constraints[0].scale(), 1.0);
     assert_eq!(constraints[0].offset(), -10.0);
 
@@ -105,20 +98,16 @@ fn calayer_advanced_surface_round_trip() {
 
     let retained_transition = Action::retained_from(&transition);
     layer.set_action_handle_for_key(LayerActionKeys::TRANSITION, Some(&retained_transition));
-    assert!(
-        layer
-            .action_handle_for_key(LayerActionKeys::TRANSITION)
-            .is_some()
-    );
+    assert!(layer
+        .action_handle_for_key(LayerActionKeys::TRANSITION)
+        .is_some());
 
     let null_action = Action::null().expect("null action");
     layer.set_action_handle_for_key(LayerActionKeys::ON_ORDER_OUT, Some(&null_action));
     null_action.run_for_key(LayerActionKeys::ON_ORDER_OUT, &layer);
 
     layer.clear_action_for_key(LayerActionKeys::ON_ORDER_OUT);
-    assert!(
-        layer
-            .action_handle_for_key(LayerActionKeys::ON_ORDER_OUT)
-            .is_none()
-    );
+    assert!(layer
+        .action_handle_for_key(LayerActionKeys::ON_ORDER_OUT)
+        .is_none());
 }

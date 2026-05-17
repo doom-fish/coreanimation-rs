@@ -76,7 +76,11 @@ impl MetalLayer {
 
     #[must_use]
     pub fn edr_metadata(&self) -> Option<EDRMetadata> {
-        unsafe { EDRMetadata::from_raw(crate::ffi::ca_metal_layer_get_edr_metadata(self.as_layer_ptr())) }
+        unsafe {
+            EDRMetadata::from_raw(crate::ffi::ca_metal_layer_get_edr_metadata(
+                self.as_layer_ptr(),
+            ))
+        }
     }
 
     pub fn set_edr_metadata(&self, value: Option<&EDRMetadata>) {

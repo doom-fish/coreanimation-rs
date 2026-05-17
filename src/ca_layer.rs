@@ -141,9 +141,7 @@ impl Layer {
     }
 
     pub fn set_edge_antialiasing_mask(&self, value: EdgeAntialiasingMask) {
-        unsafe {
-            crate::ffi::ca_layer_set_edge_antialiasing_mask(self.as_ptr(), value.bits())
-        };
+        unsafe { crate::ffi::ca_layer_set_edge_antialiasing_mask(self.as_ptr(), value.bits()) };
     }
 
     #[must_use]
@@ -231,7 +229,11 @@ impl Layer {
     #[must_use]
     pub fn default_action_handle_for_key(event: &str) -> Option<Action> {
         let event = cstring_from_str(event)?;
-        unsafe { Action::from_raw(crate::ffi::ca_layer_default_action_handle_for_key(event.as_ptr())) }
+        unsafe {
+            Action::from_raw(crate::ffi::ca_layer_default_action_handle_for_key(
+                event.as_ptr(),
+            ))
+        }
     }
 
     #[must_use]
@@ -309,10 +311,9 @@ impl Layer {
     }
 
     pub fn set_constraints(&self, constraints: &[&Constraint]) {
-        let raw: Vec<*mut core::ffi::c_void> = constraints.iter().map(|value| value.as_ptr()).collect();
-        unsafe {
-            crate::ffi::ca_layer_set_constraints(self.as_ptr(), raw.as_ptr(), raw.len())
-        };
+        let raw: Vec<*mut core::ffi::c_void> =
+            constraints.iter().map(|value| value.as_ptr()).collect();
+        unsafe { crate::ffi::ca_layer_set_constraints(self.as_ptr(), raw.as_ptr(), raw.len()) };
     }
 
     pub fn add_constraint(&self, constraint: &Constraint) {

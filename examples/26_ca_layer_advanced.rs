@@ -5,9 +5,9 @@ use std::sync::{
 };
 
 use coreanimation::{
-    Action, AutoresizingMask, Constraint, ConstraintAttribute, ConstraintLayoutManager,
-    ContentsFilter, ContentsFormat, CornerCurve, CornerMask, DynamicRange,
-    EdgeAntialiasingMask, Layer, LayerActionKeys, LayerDelegate, Transition, CGRect,
+    Action, AutoresizingMask, CGRect, Constraint, ConstraintAttribute, ConstraintLayoutManager,
+    ContentsFilter, ContentsFormat, CornerCurve, CornerMask, DynamicRange, EdgeAntialiasingMask,
+    Layer, LayerActionKeys, LayerDelegate, Transition,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -20,9 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
     layer.set_masked_corners(CornerMask::MIN_X_MIN_Y | CornerMask::MAX_X_MAX_Y);
     layer.set_corner_curve(CornerCurve::Continuous);
-    layer.set_autoresizing_mask(
-        AutoresizingMask::WIDTH_SIZABLE | AutoresizingMask::MIN_Y_MARGIN,
-    );
+    layer.set_autoresizing_mask(AutoresizingMask::WIDTH_SIZABLE | AutoresizingMask::MIN_Y_MARGIN);
     layer.set_name("advanced-layer");
 
     if Layer::supports_preferred_dynamic_range() {
@@ -63,7 +61,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let retained_transition = Action::retained_from(&transition);
     layer.set_action_handle_for_key(LayerActionKeys::TRANSITION, Some(&retained_transition));
-    assert!(layer.action_handle_for_key(LayerActionKeys::TRANSITION).is_some());
+    assert!(layer
+        .action_handle_for_key(LayerActionKeys::TRANSITION)
+        .is_some());
 
     let null_action = Action::null().ok_or("failed to create null action")?;
     layer.set_action_handle_for_key(LayerActionKeys::ON_ORDER_OUT, Some(&null_action));

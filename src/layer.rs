@@ -374,11 +374,7 @@ impl LayerDelegate {
 
     pub fn clear_layout_sublayers_callback(&mut self) {
         unsafe {
-            crate::ffi::ca_layer_delegate_set_layout_callback(
-                self.ptr,
-                None,
-                core::ptr::null_mut(),
-            )
+            crate::ffi::ca_layer_delegate_set_layout_callback(self.ptr, None, core::ptr::null_mut())
         };
         if let Some(context) = self.layout_context.take() {
             unsafe { drop(Box::from_raw(context)) };
@@ -433,11 +429,7 @@ impl LayerDelegate {
 
     pub fn clear_action_callback(&mut self) {
         unsafe {
-            crate::ffi::ca_layer_delegate_set_action_callback(
-                self.ptr,
-                None,
-                core::ptr::null_mut(),
-            )
+            crate::ffi::ca_layer_delegate_set_action_callback(self.ptr, None, core::ptr::null_mut())
         };
         if let Some(context) = self.action_context.take() {
             unsafe { drop(Box::from_raw(context)) };

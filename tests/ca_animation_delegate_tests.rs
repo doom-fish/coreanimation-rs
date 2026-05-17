@@ -2,8 +2,8 @@
 
 use apple_metal::MetalDevice;
 use coreanimation::{
-    current_media_time, Animation, AnimationDelegate, FrameRateRange, MetalDisplayLink,
-    MetalLayer, CGSize,
+    current_media_time, Animation, AnimationDelegate, CGSize, FrameRateRange, MetalDisplayLink,
+    MetalLayer,
 };
 
 #[test]
