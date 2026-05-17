@@ -1,3 +1,5 @@
+use apple_cf::cg::CGAffineTransform;
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Transform3D {
@@ -64,6 +66,52 @@ impl Transform3D {
     }
 
     #[must_use]
+    pub fn rotation(angle: f64, x: f64, y: f64, z: f64) -> Self {
+        unsafe { CATransform3DMakeRotation(angle, x, y, z) }
+    }
+
+    #[must_use]
+    pub fn translated(self, tx: f64, ty: f64, tz: f64) -> Self {
+        unsafe { CATransform3DTranslate(self, tx, ty, tz) }
+    }
+
+    #[must_use]
+    pub fn scaled(self, sx: f64, sy: f64, sz: f64) -> Self {
+        unsafe { CATransform3DScale(self, sx, sy, sz) }
+    }
+
+    #[must_use]
+    pub fn rotated(self, angle: f64, x: f64, y: f64, z: f64) -> Self {
+        unsafe { CATransform3DRotate(self, angle, x, y, z) }
+    }
+
+    #[must_use]
+    pub fn concat(self, other: Self) -> Self {
+        unsafe { CATransform3DConcat(self, other) }
+    }
+
+    #[must_use]
+    pub fn inverted(self) -> Self {
+        unsafe { CATransform3DInvert(self) }
+    }
+
+    #[must_use]
+    pub fn from_affine(transform: CGAffineTransform) -> Self {
+        unsafe { CATransform3DMakeAffineTransform(transform) }
+    }
+
+    #[must_use]
+    pub fn is_affine(self) -> bool {
+        unsafe { CATransform3DIsAffine(self) }
+    }
+
+    #[must_use]
+    pub fn to_affine(self) -> Option<CGAffineTransform> {
+        self.is_affine()
+            .then(|| unsafe { CATransform3DGetAffineTransform(self) })
+    }
+
+    #[must_use]
     pub const fn as_array(&self) -> [f64; 16] {
         [
             self.m11, self.m12, self.m13, self.m14, self.m21, self.m22, self.m23, self.m24,
@@ -76,4 +124,22 @@ impl Default for Transform3D {
     fn default() -> Self {
         Self::identity()
     }
+}
+
+unsafe extern "C" {
+    fn CATransform3DMakeRotation(angle: f64, x: f64, y: f64, z: f64) -> Transform3D;
+    fn CATransform3DTranslate(transform: Transform3D, tx: f64, ty: f64, tz: f64) -> Transform3D;
+    fn CATransform3DScale(transform: Transform3D, sx: f64, sy: f64, sz: f64) -> Transform3D;
+    fn CATransform3DRotate(
+        transform: Transform3D,
+        angle: f64,
+        x: f64,
+        y: f64,
+        z: f64,
+    ) -> Transform3D;
+    fn CATransform3DConcat(a: Transform3D, b: Transform3D) -> Transform3D;
+    fn CATransform3DInvert(transform: Transform3D) -> Transform3D;
+    fn CATransform3DMakeAffineTransform(transform: CGAffineTransform) -> Transform3D;
+    fn CATransform3DIsAffine(transform: Transform3D) -> bool;
+    fn CATransform3DGetAffineTransform(transform: Transform3D) -> CGAffineTransform;
 }

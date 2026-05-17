@@ -1,12 +1,12 @@
 # Coverage
 
-`coreanimation-rs` v0.2.1 keeps the original broad modules (`animation`, `layer`, `display_link`, `emitter`, `renderer`, and `transaction`) and layers additive `ca_*` extensions on top. The goal is a safe, tested QuartzCore subset for macOS rather than exhaustive header parity.
+`coreanimation-rs` v0.2.2 keeps the original broad modules (`animation`, `layer`, `display_link`, `emitter`, `renderer`, and `transaction`) and layers additive `ca_*` extensions on top. The current release closes the full non-exempt QuartzCore `CA*.h` audit surface from `MacOSX26.2.sdk` while keeping the earlier API stable.
 
 Legend:
 
 - ✅ implemented and exercised by at least one example and one integration test
-- 🟡 partial subset exposed
-- ⏭️ not wrapped yet
+- 🟡 broader ergonomic surface still available for future work
+- ⏭️ intentionally skipped
 
 ## Requested v0.2.0 logical areas
 
@@ -41,6 +41,22 @@ Legend:
 | `CALayer` / `CAMetalLayer` tone mapping | ✅ | `ToneMapMode`, `Layer::supports_tone_map_mode`, `tone_map_mode`, `set_tone_map_mode` | `examples/23_ca_tone_map_mode.rs`, `tests/ca_tone_map_mode_tests.rs` | `MetalLayer` inherits the new accessors via `Deref<Target = Layer>` |
 | `CAMetalDisplayLink` | ✅ | `MetalDisplayLink`, `MetalDisplayLinkUpdate`, delegate closure bridge, current-run-loop helper | `examples/24_ca_metal_display_link.rs`, `tests/ca_metal_display_link_tests.rs` | Offscreen-safe with a plain `CAMetalLayer` |
 
+## Additive v0.2.2 logical areas
+
+| Area | Status | Current Rust surface | Evidence | Notes |
+| --- | --- | --- | --- | --- |
+| `CAAction` / `CAAnimationDelegate` / `CAFrameRateRange` / `CACurrentMediaTime` | ✅ | `Action`, `ActionLike`, `AnimationDelegate`, `FrameRateRange`, `current_media_time`, `Animation::{set_delegate, preferred_frame_rate_range}`, `MetalDisplayLink::preferred_frame_rate_range` | `examples/25_ca_animation_delegate.rs`, `tests/ca_animation_delegate_tests.rs`, `src/ca_animation_delegate.rs` | Adds explicit frame-rate default/make/equality helpers and generic action handles |
+| `CALayer` advanced surface / constraints / layout managers | ✅ | `AutoresizingMask`, `EdgeAntialiasingMask`, `CornerMask`, `ContentsFormat`, `ContentsFilter`, `CornerCurve`, `DynamicRange`, `LayerActionKeys`, `LayerDelegate`, `Constraint`, `ConstraintLayoutManager`, `LayoutManager`, plus additive `Layer` APIs | `examples/26_ca_layer_advanced.rs`, `tests/ca_layer_advanced_tests.rs` | Non-breaking additive layer, action-dictionary, constraint, and delegate APIs |
+| `CAEDRMetadata` / `CAMetalLayer` HDR surface | ✅ | `EDRMetadata`, `MetalLayer::{colorspace, set_colorspace, edr_metadata, set_edr_metadata}`, inherited `preferred_dynamic_range` | `examples/27_ca_edr_metadata.rs`, `tests/ca_edr_metadata_tests.rs` | Covers HDR metadata creation plus colorspace / dynamic-range configuration |
+| `CARemoteLayerClient` / `CARemoteLayerServer` / `CARenderer` color space | ✅ | `RemoteLayerClient`, `RemoteLayerServer`, `Renderer::new_with_color_space`, `CGColorSpace` | `examples/28_ca_remote_layer_renderer.rs`, `tests/ca_remote_layer_renderer_tests.rs` | Keeps the existing renderer constructor intact while adding the color-space option |
+| `CATransform3D` advanced helpers | ✅ | `Transform3D::{rotation, translated, scaled, rotated, concat, inverted, from_affine, is_affine, to_affine}`, `CGAffineTransform` | `examples/29_ca_transform3d.rs`, `tests/ca_transform3d_tests.rs` | Completes the remaining audited transform helper surface |
+
+## Audit status
+
+- `COVERAGE_AUDIT.md` now reports `193 / 193` non-exempt QuartzCore `CA*.h` symbols wrapped.
+- Remaining audit gaps: `0`.
+- `CAOpenGLLayer` remains intentionally exempt because it is deprecated on macOS.
+
 ## Existing v0.1.0 surface retained
 
 - `CARenderer` offscreen rendering remains available and is still covered by `examples/01_layer_render_smoke.rs`.
@@ -51,11 +67,9 @@ Legend:
 
 | Area | Status | Current limitation |
 | --- | --- | --- |
-| `CALayer` deep surface | 🟡 | No delegate/action callback model, filter wrappers, layout/constraint APIs, or newer dynamic-range properties yet |
-| `CAPropertyAnimation` / object-valued `CABasicAnimation` | 🟡 | The crate now exposes the first-class property-animation/value-function surface, but higher-level typed key-path helpers and non-number `CABasicAnimation` values are still missing |
-| `CAKeyframeAnimation` advanced surface | 🟡 | The crate exposes the requested timing-function and T/C/B arrays, but not every QuartzCore path / rotation / interpolation feature |
-| `CADisplayLink` advanced configuration | 🟡 | The current wrapper focuses on lifecycle/state and timestamps; construction is main-screen/main-thread and `macOS 14+` only |
-| `CAMetalDisplayLink` advanced configuration | 🟡 | Delegate callbacks, paused state, and frame latency are wrapped, but `preferredFrameRateRange` still depends on the unwrapped `CAFrameRateRange` value type |
-| `CAMetalLayer` HDR / EDR / colorspace / residency / developer-HUD APIs | 🟡 | `toneMapMode` is wrapped, but preferred dynamic range, colorspace, residency, and developer-HUD APIs remain unwrapped |
-| `CATextLayer` attributed string / font management and `CAShapeLayer` full dash-pattern editing | 🟡 | Only a focused slice is exposed here; older content APIs remain unchanged |
-| `CAEmitterLayer` / `CAEmitterCell` advanced particle tuning | 🟡 | Existing particle support is useful but still far from complete QuartzCore coverage |
+| `CAPropertyAnimation` / object-valued `CABasicAnimation` | 🟡 | Higher-level typed key-path helpers and non-number `CABasicAnimation` values remain future work |
+| `CAKeyframeAnimation` advanced authoring helpers | 🟡 | The audited QuartzCore symbols are covered, but not every path/interpolation convenience is wrapped |
+| `CADisplayLink` / `CAMetalDisplayLink` scheduling ergonomics | 🟡 | Lifecycle, delegates, timestamps, latency, and frame-rate range are wrapped, but construction remains focused on main/current-run-loop flows |
+| `CATextLayer` attributed string / font management and `CAShapeLayer` full dash editing | 🟡 | A focused slice is exposed; richer content-editing APIs remain future work |
+| `CAEmitterLayer` / `CAEmitterCell` advanced particle tuning | 🟡 | Existing particle support is useful but not exhaustive |
+| `CAOpenGLLayer` | ⏭️ | Deprecated on macOS and intentionally exempt from the audit |

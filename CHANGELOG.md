@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2] - 2026-05-17
+
+- Added additive wrappers for `Action`, `AnimationDelegate`, `FrameRateRange`, `current_media_time`, `Constraint`, `ConstraintLayoutManager`, `LayoutManager`, `EDRMetadata`, `RemoteLayerClient`, and `RemoteLayerServer`
+- Extended `Layer`, `MetalLayer`, `MetalDisplayLink`, `Renderer`, and `Transform3D` with the remaining audited QuartzCore/Core Animation surface, including action dictionaries, advanced layer enums, HDR/EDR metadata, renderer color-space options, and affine/concat/invert transform helpers
+- Added 5 focused examples and 5 integration tests covering the new wrappers, plus callback-focused unit coverage for `CAAnimationDelegate`
+- Refreshed `README.md`, `COVERAGE.md`, and `COVERAGE_AUDIT.md` to reflect full non-exempt `CA*.h` audit coverage (0 gaps, 1 deprecated exemption)
+
 ## [0.2.1] - 2026-05-16
 
 - Added `PropertyAnimation`, `ValueFunction`, and `ValueFunctionName`, plus additive/cumulative/value-function helpers across the property-animation wrappers

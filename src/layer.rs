@@ -1,10 +1,12 @@
+use core::ffi::{c_char, c_void};
 use std::ffi::CStr;
-use std::ops::Deref;
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Deref};
 
 use apple_cf::cg::CGImage;
 use apple_cf::cg::{CGPoint, CGRect, CGSize};
 
-use crate::animation::AnimationLike;
+use crate::animation::{Animation, AnimationLike};
+use crate::ca_action::Action;
 use crate::color::Color;
 use crate::path::Path;
 use crate::private::{cstring_from_str, handle_type};
@@ -104,6 +106,404 @@ impl ToneMapMode {
             _ => Self::Automatic,
         }
     }
+}
+
+macro_rules! bitmask_type {
+    ($name:ident, $ty:ty, { $($const_name:ident = $value:expr),+ $(,)? }) => {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+        #[repr(transparent)]
+        pub struct $name($ty);
+
+        impl $name {
+            pub const NONE: Self = Self(0);
+            $(pub const $const_name: Self = Self($value);)+
+
+            #[must_use]
+            pub const fn empty() -> Self {
+                Self::NONE
+            }
+
+            #[must_use]
+            pub const fn bits(self) -> $ty {
+                self.0
+            }
+
+            #[must_use]
+            pub const fn contains(self, other: Self) -> bool {
+                (self.0 & other.0) == other.0
+            }
+        }
+
+        impl From<$ty> for $name {
+            fn from(value: $ty) -> Self {
+                Self(value)
+            }
+        }
+
+        impl BitOr for $name {
+            type Output = Self;
+
+            fn bitor(self, rhs: Self) -> Self::Output {
+                Self(self.0 | rhs.0)
+            }
+        }
+
+        impl BitOrAssign for $name {
+            fn bitor_assign(&mut self, rhs: Self) {
+                self.0 |= rhs.0;
+            }
+        }
+
+        impl BitAnd for $name {
+            type Output = Self;
+
+            fn bitand(self, rhs: Self) -> Self::Output {
+                Self(self.0 & rhs.0)
+            }
+        }
+
+        impl BitAndAssign for $name {
+            fn bitand_assign(&mut self, rhs: Self) {
+                self.0 &= rhs.0;
+            }
+        }
+    };
+}
+
+bitmask_type!(AutoresizingMask, u32, {
+    MIN_X_MARGIN = 1_u32 << 0,
+    WIDTH_SIZABLE = 1_u32 << 1,
+    MAX_X_MARGIN = 1_u32 << 2,
+    MIN_Y_MARGIN = 1_u32 << 3,
+    HEIGHT_SIZABLE = 1_u32 << 4,
+    MAX_Y_MARGIN = 1_u32 << 5,
+});
+
+bitmask_type!(EdgeAntialiasingMask, u32, {
+    LEFT_EDGE = 1_u32 << 0,
+    RIGHT_EDGE = 1_u32 << 1,
+    BOTTOM_EDGE = 1_u32 << 2,
+    TOP_EDGE = 1_u32 << 3,
+});
+
+bitmask_type!(CornerMask, u64, {
+    MIN_X_MIN_Y = 1_u64 << 0,
+    MAX_X_MIN_Y = 1_u64 << 1,
+    MIN_X_MAX_Y = 1_u64 << 2,
+    MAX_X_MAX_Y = 1_u64 << 3,
+});
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
+pub enum ContentsFormat {
+    RGBA8Uint = 0,
+    RGBA16Float = 1,
+    Gray8Uint = 2,
+    Automatic = 3,
+}
+
+impl ContentsFormat {
+    pub(crate) const fn from_raw(value: i32) -> Self {
+        match value {
+            1 => Self::RGBA16Float,
+            2 => Self::Gray8Uint,
+            3 => Self::Automatic,
+            _ => Self::RGBA8Uint,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
+pub enum ContentsFilter {
+    Nearest = 0,
+    Linear = 1,
+    Trilinear = 2,
+}
+
+impl ContentsFilter {
+    pub(crate) const fn from_raw(value: i32) -> Self {
+        match value {
+            1 => Self::Linear,
+            2 => Self::Trilinear,
+            _ => Self::Nearest,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
+pub enum CornerCurve {
+    Circular = 0,
+    Continuous = 1,
+}
+
+impl CornerCurve {
+    pub(crate) const fn from_raw(value: i32) -> Self {
+        match value {
+            1 => Self::Continuous,
+            _ => Self::Circular,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(i32)]
+pub enum DynamicRange {
+    Automatic = 0,
+    Standard = 1,
+    ConstrainedHigh = 2,
+    High = 3,
+}
+
+impl DynamicRange {
+    pub(crate) const fn from_raw(value: i32) -> Self {
+        match value {
+            1 => Self::Standard,
+            2 => Self::ConstrainedHigh,
+            3 => Self::High,
+            _ => Self::Automatic,
+        }
+    }
+}
+
+pub struct LayerActionKeys;
+
+impl LayerActionKeys {
+    pub const ON_ORDER_IN: &str = "onOrderIn";
+    pub const ON_ORDER_OUT: &str = "onOrderOut";
+    pub const TRANSITION: &str = "transition";
+}
+
+struct LayerDisplayContext {
+    callback: Box<dyn FnMut(Layer)>,
+}
+
+struct LayerLayoutContext {
+    callback: Box<dyn FnMut(Layer)>,
+}
+
+type RawLayerActionCallback = dyn FnMut(Layer, &str) -> *mut c_void;
+
+struct LayerActionContext {
+    callback: Box<RawLayerActionCallback>,
+}
+
+pub struct LayerDelegate {
+    ptr: *mut c_void,
+    display_context: Option<*mut LayerDisplayContext>,
+    layout_context: Option<*mut LayerLayoutContext>,
+    action_context: Option<*mut LayerActionContext>,
+}
+
+impl core::fmt::Debug for LayerDelegate {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("LayerDelegate")
+            .field("ptr", &self.ptr)
+            .field("has_display", &self.display_context.is_some())
+            .field("has_layout", &self.layout_context.is_some())
+            .field("has_action", &self.action_context.is_some())
+            .finish()
+    }
+}
+
+impl LayerDelegate {
+    #[must_use]
+    pub fn new() -> Option<Self> {
+        let ptr = unsafe { crate::ffi::ca_layer_delegate_new() };
+        if ptr.is_null() {
+            None
+        } else {
+            Some(Self {
+                ptr,
+                display_context: None,
+                layout_context: None,
+                action_context: None,
+            })
+        }
+    }
+
+    pub fn set_display_callback<F>(&mut self, callback: F)
+    where
+        F: FnMut(Layer) + 'static,
+    {
+        self.clear_display_callback();
+        let context = Box::into_raw(Box::new(LayerDisplayContext {
+            callback: Box::new(callback),
+        }));
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_display_callback(
+                self.ptr,
+                Some(layer_delegate_display_trampoline),
+                context.cast(),
+            )
+        };
+        self.display_context = Some(context);
+    }
+
+    pub fn clear_display_callback(&mut self) {
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_display_callback(
+                self.ptr,
+                None,
+                core::ptr::null_mut(),
+            )
+        };
+        if let Some(context) = self.display_context.take() {
+            unsafe { drop(Box::from_raw(context)) };
+        }
+    }
+
+    pub fn set_layout_sublayers_callback<F>(&mut self, callback: F)
+    where
+        F: FnMut(Layer) + 'static,
+    {
+        self.clear_layout_sublayers_callback();
+        let context = Box::into_raw(Box::new(LayerLayoutContext {
+            callback: Box::new(callback),
+        }));
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_layout_callback(
+                self.ptr,
+                Some(layer_delegate_layout_trampoline),
+                context.cast(),
+            )
+        };
+        self.layout_context = Some(context);
+    }
+
+    pub fn clear_layout_sublayers_callback(&mut self) {
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_layout_callback(
+                self.ptr,
+                None,
+                core::ptr::null_mut(),
+            )
+        };
+        if let Some(context) = self.layout_context.take() {
+            unsafe { drop(Box::from_raw(context)) };
+        }
+    }
+
+    pub fn set_action_callback<F>(&mut self, callback: F)
+    where
+        F: FnMut(Layer, &str) -> Option<Animation> + 'static,
+    {
+        self.clear_action_callback();
+        let mut callback = callback;
+        let context = Box::into_raw(Box::new(LayerActionContext {
+            callback: Box::new(move |layer, key| {
+                callback(layer, key).map_or(core::ptr::null_mut(), |animation| unsafe {
+                    crate::ffi::ca_retain(animation.as_ptr())
+                })
+            }),
+        }));
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_action_callback(
+                self.ptr,
+                Some(layer_delegate_action_trampoline),
+                context.cast(),
+            )
+        };
+        self.action_context = Some(context);
+    }
+
+    pub fn set_action_provider<F>(&mut self, callback: F)
+    where
+        F: FnMut(Layer, &str) -> Option<Action> + 'static,
+    {
+        self.clear_action_callback();
+        let mut callback = callback;
+        let context = Box::into_raw(Box::new(LayerActionContext {
+            callback: Box::new(move |layer, key| {
+                callback(layer, key).map_or(core::ptr::null_mut(), |action| unsafe {
+                    crate::ffi::ca_retain(action.as_ptr())
+                })
+            }),
+        }));
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_action_callback(
+                self.ptr,
+                Some(layer_delegate_action_trampoline),
+                context.cast(),
+            )
+        };
+        self.action_context = Some(context);
+    }
+
+    pub fn clear_action_callback(&mut self) {
+        unsafe {
+            crate::ffi::ca_layer_delegate_set_action_callback(
+                self.ptr,
+                None,
+                core::ptr::null_mut(),
+            )
+        };
+        if let Some(context) = self.action_context.take() {
+            unsafe { drop(Box::from_raw(context)) };
+        }
+    }
+
+    pub(crate) const fn as_ptr(&self) -> *mut c_void {
+        self.ptr
+    }
+}
+
+impl Drop for LayerDelegate {
+    fn drop(&mut self) {
+        self.clear_display_callback();
+        self.clear_layout_sublayers_callback();
+        self.clear_action_callback();
+        if !self.ptr.is_null() {
+            unsafe { crate::ffi::ca_release(self.ptr) };
+            self.ptr = core::ptr::null_mut();
+        }
+    }
+}
+
+unsafe extern "C" fn layer_delegate_display_trampoline(
+    context: *mut c_void,
+    layer_handle: *mut c_void,
+) {
+    if context.is_null() || layer_handle.is_null() {
+        return;
+    }
+
+    let context = unsafe { &mut *context.cast::<LayerDisplayContext>() };
+    let layer = unsafe { Layer::from_raw_unchecked(layer_handle) };
+    (context.callback)(layer);
+}
+
+unsafe extern "C" fn layer_delegate_layout_trampoline(
+    context: *mut c_void,
+    layer_handle: *mut c_void,
+) {
+    if context.is_null() || layer_handle.is_null() {
+        return;
+    }
+
+    let context = unsafe { &mut *context.cast::<LayerLayoutContext>() };
+    let layer = unsafe { Layer::from_raw_unchecked(layer_handle) };
+    (context.callback)(layer);
+}
+
+unsafe extern "C" fn layer_delegate_action_trampoline(
+    context: *mut c_void,
+    layer_handle: *mut c_void,
+    key: *const c_char,
+) -> *mut c_void {
+    if context.is_null() || layer_handle.is_null() {
+        return core::ptr::null_mut();
+    }
+
+    let context = unsafe { &mut *context.cast::<LayerActionContext>() };
+    let layer = unsafe { Layer::from_raw_unchecked(layer_handle) };
+    let key = if key.is_null() {
+        ""
+    } else {
+        unsafe { CStr::from_ptr(key) }.to_str().unwrap_or_default()
+    };
+    (context.callback)(layer, key)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

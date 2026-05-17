@@ -16,6 +16,32 @@ pub type CVDisplayLinkOutputCallback = Option<
 pub type TransactionCompletionCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
 
 #[allow(clippy::upper_case_acronyms)]
+pub type AnimationDidStartCallback =
+    Option<unsafe extern "C" fn(context: *mut c_void, animation_handle: *mut c_void)>;
+
+#[allow(clippy::upper_case_acronyms)]
+pub type AnimationDidStopCallback = Option<
+    unsafe extern "C" fn(context: *mut c_void, animation_handle: *mut c_void, finished: bool),
+>;
+
+#[allow(clippy::upper_case_acronyms)]
+pub type LayerDisplayCallback =
+    Option<unsafe extern "C" fn(context: *mut c_void, layer_handle: *mut c_void)>;
+
+#[allow(clippy::upper_case_acronyms)]
+pub type LayerLayoutCallback =
+    Option<unsafe extern "C" fn(context: *mut c_void, layer_handle: *mut c_void)>;
+
+#[allow(clippy::upper_case_acronyms)]
+pub type LayerActionCallback = Option<
+    unsafe extern "C" fn(
+        context: *mut c_void,
+        layer_handle: *mut c_void,
+        key: *const c_char,
+    ) -> *mut c_void,
+>;
+
+#[allow(clippy::upper_case_acronyms)]
 pub type MetalDisplayLinkUpdateCallback =
     Option<unsafe extern "C" fn(context: *mut c_void, update_handle: *mut c_void)>;
 
@@ -58,6 +84,7 @@ pub struct CVTimeStamp {
 unsafe extern "C" {
     pub fn ca_retain(handle: *mut c_void) -> *mut c_void;
     pub fn ca_release(handle: *mut c_void);
+    pub fn CACurrentMediaTime() -> f64;
 
     pub fn ca_color_new_rgba(red: f64, green: f64, blue: f64, alpha: f64) -> *mut c_void;
     pub fn ca_color_get_components(handle: *mut c_void, out_components: *mut c_void) -> bool;
@@ -310,6 +337,11 @@ unsafe extern "C" {
     pub fn ca_transition_set_end_progress(handle: *mut c_void, value: f32);
 
     pub fn ca_renderer_new(texture_handle: *mut c_void, queue_handle: *mut c_void) -> *mut c_void;
+    pub fn ca_renderer_new_with_options(
+        texture_handle: *mut c_void,
+        queue_handle: *mut c_void,
+        color_space_handle: *mut c_void,
+    ) -> *mut c_void;
     pub fn ca_renderer_set_layer(handle: *mut c_void, layer_handle: *mut c_void);
     pub fn ca_renderer_get_bounds(handle: *mut c_void, out_rect: *mut c_void) -> bool;
     pub fn ca_renderer_set_bounds(handle: *mut c_void, x: f64, y: f64, width: f64, height: f64);
@@ -353,6 +385,87 @@ unsafe extern "C" {
     pub fn ca_layer_supports_tone_map_mode() -> bool;
     pub fn ca_layer_get_tone_map_mode(handle: *mut c_void) -> i32;
     pub fn ca_layer_set_tone_map_mode(handle: *mut c_void, value: i32);
+    pub fn ca_layer_supports_preferred_dynamic_range() -> bool;
+    pub fn ca_layer_get_preferred_dynamic_range(handle: *mut c_void) -> i32;
+    pub fn ca_layer_set_preferred_dynamic_range(handle: *mut c_void, value: i32);
+    pub fn ca_layer_get_contents_format(handle: *mut c_void) -> i32;
+    pub fn ca_layer_set_contents_format(handle: *mut c_void, value: i32);
+    pub fn ca_layer_get_minification_filter(handle: *mut c_void) -> i32;
+    pub fn ca_layer_set_minification_filter(handle: *mut c_void, value: i32);
+    pub fn ca_layer_get_magnification_filter(handle: *mut c_void) -> i32;
+    pub fn ca_layer_set_magnification_filter(handle: *mut c_void, value: i32);
+    pub fn ca_layer_get_edge_antialiasing_mask(handle: *mut c_void) -> u32;
+    pub fn ca_layer_set_edge_antialiasing_mask(handle: *mut c_void, value: u32);
+    pub fn ca_layer_get_masked_corners(handle: *mut c_void) -> u64;
+    pub fn ca_layer_set_masked_corners(handle: *mut c_void, value: u64);
+    pub fn ca_layer_get_corner_curve(handle: *mut c_void) -> i32;
+    pub fn ca_layer_set_corner_curve(handle: *mut c_void, value: i32);
+    pub fn ca_layer_corner_curve_expansion_factor(value: i32) -> f64;
+    pub fn ca_layer_get_autoresizing_mask(handle: *mut c_void) -> u32;
+    pub fn ca_layer_set_autoresizing_mask(handle: *mut c_void, value: u32);
+    pub fn ca_layer_get_name(handle: *mut c_void) -> *mut c_char;
+    pub fn ca_layer_set_name(handle: *mut c_void, value: *const c_char);
+    pub fn ca_layer_display(handle: *mut c_void);
+    pub fn ca_layer_set_needs_display(handle: *mut c_void);
+    pub fn ca_layer_display_if_needed(handle: *mut c_void);
+    pub fn ca_layer_set_needs_layout(handle: *mut c_void);
+    pub fn ca_layer_layout_if_needed(handle: *mut c_void);
+    pub fn ca_layer_layout_sublayers(handle: *mut c_void);
+    pub fn ca_layer_default_action_for_key(key: *const c_char) -> *mut c_void;
+    pub fn ca_layer_default_action_handle_for_key(key: *const c_char) -> *mut c_void;
+    pub fn ca_layer_action_for_key(handle: *mut c_void, key: *const c_char) -> *mut c_void;
+    pub fn ca_layer_action_handle_for_key(handle: *mut c_void, key: *const c_char) -> *mut c_void;
+    pub fn ca_layer_set_action_for_key(
+        handle: *mut c_void,
+        key: *const c_char,
+        action_handle: *mut c_void,
+    );
+    pub fn ca_layer_delegate_new() -> *mut c_void;
+    pub fn ca_layer_delegate_set_display_callback(
+        handle: *mut c_void,
+        callback: LayerDisplayCallback,
+        context: *mut c_void,
+    );
+    pub fn ca_layer_delegate_set_layout_callback(
+        handle: *mut c_void,
+        callback: LayerLayoutCallback,
+        context: *mut c_void,
+    );
+    pub fn ca_layer_delegate_set_action_callback(
+        handle: *mut c_void,
+        callback: LayerActionCallback,
+        context: *mut c_void,
+    );
+    pub fn ca_action_null() -> *mut c_void;
+    pub fn ca_action_run_for_key(
+        handle: *mut c_void,
+        event: *const c_char,
+        object_handle: *mut c_void,
+    );
+    pub fn ca_layer_set_delegate(handle: *mut c_void, delegate_handle: *mut c_void);
+    pub fn ca_layer_get_layout_manager(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_layer_set_layout_manager(handle: *mut c_void, manager_handle: *mut c_void);
+    pub fn ca_layer_constraint_count(handle: *mut c_void) -> usize;
+    pub fn ca_layer_constraint_at(handle: *mut c_void, index: usize) -> *mut c_void;
+    pub fn ca_layer_set_constraints(
+        handle: *mut c_void,
+        constraints: *const *mut c_void,
+        count: usize,
+    );
+    pub fn ca_layer_add_constraint(handle: *mut c_void, constraint_handle: *mut c_void);
+    pub fn ca_constraint_layout_manager_new() -> *mut c_void;
+    pub fn ca_constraint_new(
+        attribute: i32,
+        source_name: *const c_char,
+        source_attribute: i32,
+        scale: f64,
+        offset: f64,
+    ) -> *mut c_void;
+    pub fn ca_constraint_get_attribute(handle: *mut c_void) -> i32;
+    pub fn ca_constraint_get_source_name(handle: *mut c_void) -> *mut c_char;
+    pub fn ca_constraint_get_source_attribute(handle: *mut c_void) -> i32;
+    pub fn ca_constraint_get_scale(handle: *mut c_void) -> f64;
+    pub fn ca_constraint_get_offset(handle: *mut c_void) -> f64;
 
     pub fn ca_animation_get_timing_function(handle: *mut c_void) -> *mut c_void;
     pub fn ca_animation_set_timing_function(handle: *mut c_void, value_handle: *mut c_void);
@@ -368,6 +481,23 @@ unsafe extern "C" {
     pub fn ca_animation_set_repeat_duration(handle: *mut c_void, value: f64);
     pub fn ca_animation_get_fill_mode(handle: *mut c_void) -> i32;
     pub fn ca_animation_set_fill_mode(handle: *mut c_void, value: i32);
+    pub fn ca_animation_delegate_new() -> *mut c_void;
+    pub fn ca_animation_delegate_set_did_start_callback(
+        handle: *mut c_void,
+        callback: AnimationDidStartCallback,
+        context: *mut c_void,
+    );
+    pub fn ca_animation_delegate_set_did_stop_callback(
+        handle: *mut c_void,
+        callback: AnimationDidStopCallback,
+        context: *mut c_void,
+    );
+    pub fn ca_animation_set_delegate(handle: *mut c_void, delegate_handle: *mut c_void);
+    pub fn ca_animation_supports_preferred_frame_rate_range() -> bool;
+    pub fn ca_animation_get_preferred_frame_rate_range(handle: *mut c_void, out_range: *mut c_void);
+    pub fn ca_animation_set_preferred_frame_rate_range(handle: *mut c_void, range: *const c_void);
+    pub fn ca_animation_invoke_delegate_did_start(handle: *mut c_void);
+    pub fn ca_animation_invoke_delegate_did_stop(handle: *mut c_void, finished: bool);
 
     pub fn ca_basic_animation_get_from_number(handle: *mut c_void, out_value: *mut c_void) -> bool;
     pub fn ca_basic_animation_get_to_number(handle: *mut c_void, out_value: *mut c_void) -> bool;
@@ -459,6 +589,14 @@ unsafe extern "C" {
     pub fn ca_metal_display_link_set_paused(handle: *mut c_void, value: bool);
     pub fn ca_metal_display_link_get_preferred_frame_latency(handle: *mut c_void) -> f32;
     pub fn ca_metal_display_link_set_preferred_frame_latency(handle: *mut c_void, value: f32);
+    pub fn ca_metal_display_link_get_preferred_frame_rate_range(
+        handle: *mut c_void,
+        out_range: *mut c_void,
+    );
+    pub fn ca_metal_display_link_set_preferred_frame_rate_range(
+        handle: *mut c_void,
+        range: *const c_void,
+    );
     pub fn ca_metal_display_link_set_delegate(
         handle: *mut c_void,
         callback: MetalDisplayLinkUpdateCallback,
@@ -480,6 +618,28 @@ unsafe extern "C" {
     pub fn ca_metal_layer_set_display_sync_enabled(handle: *mut c_void, value: bool);
     pub fn ca_metal_layer_get_allows_next_drawable_timeout(handle: *mut c_void) -> bool;
     pub fn ca_metal_layer_set_allows_next_drawable_timeout(handle: *mut c_void, value: bool);
+    pub fn ca_metal_layer_get_colorspace(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_metal_layer_set_colorspace(handle: *mut c_void, value_handle: *mut c_void);
+    pub fn ca_metal_layer_get_edr_metadata(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_metal_layer_set_edr_metadata(handle: *mut c_void, value_handle: *mut c_void);
+    pub fn ca_edr_metadata_is_available() -> bool;
+    pub fn ca_edr_metadata_new_hdr10_with_display_info(
+        display_info_bytes: *const c_void,
+        display_info_len: usize,
+        content_info_bytes: *const c_void,
+        content_info_len: usize,
+        optical_output_scale: f32,
+    ) -> *mut c_void;
+    pub fn ca_edr_metadata_new_hdr10(
+        min_luminance: f32,
+        max_luminance: f32,
+        optical_output_scale: f32,
+    ) -> *mut c_void;
+    pub fn ca_edr_metadata_new_hlg(
+        ambient_viewing_environment_bytes: *const c_void,
+        ambient_viewing_environment_len: usize,
+    ) -> *mut c_void;
+    pub fn ca_edr_metadata_get_hlg() -> *mut c_void;
 
     pub fn ca_gradient_layer_get_color_components_at(
         handle: *mut c_void,
@@ -560,6 +720,15 @@ unsafe extern "C" {
     pub fn ca_tiled_layer_set_levels_of_detail_bias(handle: *mut c_void, value: usize);
     pub fn ca_tiled_layer_get_tile_size(handle: *mut c_void, out_size: *mut c_void) -> bool;
     pub fn ca_tiled_layer_set_tile_size(handle: *mut c_void, width: f64, height: f64);
+
+    pub fn ca_remote_layer_server_shared() -> *mut c_void;
+    pub fn ca_remote_layer_server_get_port(handle: *mut c_void) -> u32;
+    pub fn ca_remote_layer_server_layer_with_client_id(client_id: u32) -> *mut c_void;
+    pub fn ca_remote_layer_client_new(server_port: u32) -> *mut c_void;
+    pub fn ca_remote_layer_client_invalidate(handle: *mut c_void);
+    pub fn ca_remote_layer_client_get_client_id(handle: *mut c_void) -> u32;
+    pub fn ca_remote_layer_client_get_layer(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_remote_layer_client_set_layer(handle: *mut c_void, layer_handle: *mut c_void);
 
     pub fn CVDisplayLinkCreateWithActiveCGDisplays(display_link_out: *mut *mut c_void) -> i32;
     pub fn CVDisplayLinkSetCurrentCGDisplay(display_link: *mut c_void, display_id: u32) -> i32;

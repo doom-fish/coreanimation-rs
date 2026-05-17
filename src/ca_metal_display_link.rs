@@ -1,5 +1,6 @@
 use core::ffi::c_void;
 
+use crate::ca_frame_rate_range::FrameRateRange;
 use crate::layer::{LayerLike, MetalDrawable, MetalLayer};
 use crate::private::handle_type;
 
@@ -70,6 +71,27 @@ impl MetalDisplayLink {
 
     pub fn set_preferred_frame_latency(&self, value: f32) {
         unsafe { crate::ffi::ca_metal_display_link_set_preferred_frame_latency(self.ptr, value) };
+    }
+
+    #[must_use]
+    pub fn preferred_frame_rate_range(&self) -> FrameRateRange {
+        let mut range = FrameRateRange::default();
+        unsafe {
+            crate::ffi::ca_metal_display_link_get_preferred_frame_rate_range(
+                self.ptr,
+                (&mut range as *mut FrameRateRange).cast(),
+            )
+        };
+        range
+    }
+
+    pub fn set_preferred_frame_rate_range(&self, range: FrameRateRange) {
+        unsafe {
+            crate::ffi::ca_metal_display_link_set_preferred_frame_rate_range(
+                self.ptr,
+                (&range as *const FrameRateRange).cast(),
+            )
+        };
     }
 
     pub fn set_delegate<F>(&mut self, callback: F)

@@ -143,6 +143,91 @@ func caToneMapModeRaw(_ value: CALayer.ToneMapMode) -> Int32 {
     }
 }
 
+@available(macOS 12.0, *)
+func caWriteFrameRateRange(_ range: CAFrameRateRange, out: UnsafeMutableRawPointer?) -> Bool {
+    guard let out else { return false }
+    let ptr = out.assumingMemoryBound(to: Float.self)
+    ptr[0] = range.minimum
+    ptr[1] = range.maximum
+    ptr[2] = range.preferred ?? 0
+    return true
+}
+
+@available(macOS 12.0, *)
+func caReadFrameRateRange(_ raw: UnsafeRawPointer?) -> CAFrameRateRange? {
+    guard let raw else { return nil }
+    let ptr = raw.assumingMemoryBound(to: Float.self)
+    return CAFrameRateRange(minimum: ptr[0], maximum: ptr[1], preferred: ptr[2])
+}
+
+func caContentsFormat(_ raw: Int32) -> CALayerContentsFormat {
+    switch raw {
+    case 1: return .RGBA16Float
+    case 2: return .gray8Uint
+    case 3: return .automatic
+    default: return .RGBA8Uint
+    }
+}
+
+func caContentsFormatRaw(_ value: CALayerContentsFormat) -> Int32 {
+    switch value {
+    case .RGBA16Float: return 1
+    case .gray8Uint: return 2
+    case .automatic: return 3
+    default: return 0
+    }
+}
+
+func caContentsFilter(_ raw: Int32) -> CALayerContentsFilter {
+    switch raw {
+    case 1: return .linear
+    case 2: return .trilinear
+    default: return .nearest
+    }
+}
+
+func caContentsFilterRaw(_ value: CALayerContentsFilter) -> Int32 {
+    switch value {
+    case .linear: return 1
+    case .trilinear: return 2
+    default: return 0
+    }
+}
+
+func caCornerCurve(_ raw: Int32) -> CALayerCornerCurve {
+    switch raw {
+    case 1: return .continuous
+    default: return .circular
+    }
+}
+
+func caCornerCurveRaw(_ value: CALayerCornerCurve) -> Int32 {
+    switch value {
+    case .continuous: return 1
+    default: return 0
+    }
+}
+
+@available(macOS 26.0, *)
+func caDynamicRange(_ raw: Int32) -> CALayer.DynamicRange {
+    switch raw {
+    case 1: return .standard
+    case 2: return .constrainedHigh
+    case 3: return .high
+    default: return .automatic
+    }
+}
+
+@available(macOS 26.0, *)
+func caDynamicRangeRaw(_ value: CALayer.DynamicRange) -> Int32 {
+    switch value {
+    case .standard: return 1
+    case .constrainedHigh: return 2
+    case .high: return 3
+    default: return 0
+    }
+}
+
 func caLineCap(_ raw: Int32) -> CAShapeLayerLineCap {
     switch raw {
     case 1: return .round

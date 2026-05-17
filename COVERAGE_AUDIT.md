@@ -5,10 +5,11 @@
 - Deprecated macOS symbol kept as EXEMPT: `CAOpenGLLayer`.
 
 SDK_PUBLIC_SYMBOLS: 194
-VERIFIED: 147
-GAPS: 46
+VERIFIED: 193
+GAPS: 0
 EXEMPT: 1
-COVERAGE_PCT: 75.8%
+COVERAGE_PCT: 99.5%
+NON_EXEMPT_COVERAGE_PCT: 100.0%
 
 ## 🟢 VERIFIED
 | Symbol | Kind | Header | Wrapped by |
@@ -160,56 +161,55 @@ COVERAGE_PCT: 75.8%
 | `kCAValueFunctionTranslateX` | constant | `CAValueFunction.h` | `ValueFunctionName::TranslateX` |
 | `kCAValueFunctionTranslateY` | constant | `CAValueFunction.h` | `ValueFunctionName::TranslateY` |
 | `kCAValueFunctionTranslateZ` | constant | `CAValueFunction.h` | `ValueFunctionName::TranslateZ` |
+| `CAAnimationDelegate` | protocol | `CAAnimation.h` | `AnimationDelegate` |
+| `CACurrentMediaTime` | function | `CABase.h` | `current_media_time` |
+| `CAConstraint` | interface | `CAConstraintLayoutManager.h` | `Constraint` |
+| `CAConstraintLayoutManager` | interface | `CAConstraintLayoutManager.h` | `ConstraintLayoutManager` |
+| `CAEDRMetadata` | interface | `CAEDRMetadata.h` | `EDRMetadata` |
+| `CAFrameRateRange` | typedef | `CAFrameRateRange.h` | `FrameRateRange` |
+| `CAFrameRateRangeDefault` | constant | `CAFrameRateRange.h` | `FrameRateRange::DEFAULT` |
+| `CAFrameRateRangeIsEqualToRange` | function | `CAFrameRateRange.h` | `FrameRateRange::is_equal_to_range` |
+| `CAFrameRateRangeMake` | function | `CAFrameRateRange.h` | `FrameRateRange::make` |
+| `CAAction` | protocol | `CALayer.h` | `Action`, `Layer::{action_handle_for_key, set_action_handle_for_key}` |
+| `CAAutoresizingMask` | enum | `CALayer.h` | `AutoresizingMask` |
+| `CACornerMask` | enum | `CALayer.h` | `CornerMask` |
+| `CADynamicRange` | typealias | `CALayer.h` | `DynamicRange` |
+| `CADynamicRangeAutomatic` | constant | `CALayer.h` | `DynamicRange::Automatic` |
+| `CADynamicRangeConstrainedHigh` | constant | `CALayer.h` | `DynamicRange::ConstrainedHigh` |
+| `CADynamicRangeHigh` | constant | `CALayer.h` | `DynamicRange::High` |
+| `CADynamicRangeStandard` | constant | `CALayer.h` | `DynamicRange::Standard` |
+| `CAEdgeAntialiasingMask` | enum | `CALayer.h` | `EdgeAntialiasingMask` |
+| `CALayerContentsFilter` | typealias | `CALayer.h` | `ContentsFilter` |
+| `CALayerContentsFormat` | typealias | `CALayer.h` | `ContentsFormat` |
+| `CALayerCornerCurve` | typealias | `CALayer.h` | `CornerCurve` |
+| `CALayerDelegate` | protocol | `CALayer.h` | `LayerDelegate`, `Layer::set_delegate` |
+| `CALayoutManager` | protocol | `CALayer.h` | `LayoutManager`, `ConstraintLayoutManager` |
+| `kCAContentsFormatGray8Uint` | constant | `CALayer.h` | `ContentsFormat::Gray8Uint` |
+| `kCAContentsFormatRGBA16Float` | constant | `CALayer.h` | `ContentsFormat::RGBA16Float` |
+| `kCAContentsFormatRGBA8Uint` | constant | `CALayer.h` | `ContentsFormat::RGBA8Uint` |
+| `kCACornerCurveCircular` | constant | `CALayer.h` | `CornerCurve::Circular` |
+| `kCACornerCurveContinuous` | constant | `CALayer.h` | `CornerCurve::Continuous` |
+| `kCAFilterLinear` | constant | `CALayer.h` | `ContentsFilter::Linear` |
+| `kCAFilterNearest` | constant | `CALayer.h` | `ContentsFilter::Nearest` |
+| `kCAFilterTrilinear` | constant | `CALayer.h` | `ContentsFilter::Trilinear` |
+| `kCAOnOrderIn` | constant | `CALayer.h` | `LayerActionKeys::ON_ORDER_IN` |
+| `kCAOnOrderOut` | constant | `CALayer.h` | `LayerActionKeys::ON_ORDER_OUT` |
+| `kCATransition` | constant | `CALayer.h` | `LayerActionKeys::TRANSITION` |
+| `CARemoteLayerClient` | interface | `CARemoteLayerClient.h` | `RemoteLayerClient` |
+| `CARemoteLayerServer` | interface | `CARemoteLayerServer.h` | `RemoteLayerServer` |
+| `kCARendererColorSpace` | constant | `CARenderer.h` | `Renderer::new_with_color_space` |
+| `CATransform3DConcat` | function | `CATransform3D.h` | `Transform3D::concat` |
+| `CATransform3DGetAffineTransform` | function | `CATransform3D.h` | `Transform3D::to_affine` |
+| `CATransform3DInvert` | function | `CATransform3D.h` | `Transform3D::inverted` |
+| `CATransform3DIsAffine` | function | `CATransform3D.h` | `Transform3D::is_affine` |
+| `CATransform3DMakeAffineTransform` | function | `CATransform3D.h` | `Transform3D::from_affine` |
+| `CATransform3DMakeRotation` | function | `CATransform3D.h` | `Transform3D::rotation` |
+| `CATransform3DRotate` | function | `CATransform3D.h` | `Transform3D::rotated` |
+| `CATransform3DScale` | function | `CATransform3D.h` | `Transform3D::scaled` |
+| `CATransform3DTranslate` | function | `CATransform3D.h` | `Transform3D::translated` |
 
 ## 🔴 GAPS
-| Symbol | Kind | Header | Notes |
-| --- | --- | --- | --- |
-| `CAAnimationDelegate` | protocol | `CAAnimation.h` | No delegate bridge for animation lifecycle callbacks. |
-| `CACurrentMediaTime` | function | `CABase.h` | No Rust helper for the global Core Animation media clock. |
-| `CAConstraint` | interface | `CAConstraintLayoutManager.h` | Constraint-based layer layout APIs are not wrapped. |
-| `CAConstraintLayoutManager` | interface | `CAConstraintLayoutManager.h` | Constraint-based layer layout APIs are not wrapped. |
-| `CAEDRMetadata` | interface | `CAEDRMetadata.h` | HDR/EDR metadata objects are not exposed. |
-| `CAFrameRateRange` | typedef | `CAFrameRateRange.h` | No `CAFrameRateRange` value type or preferred-frame-rate bindings. |
-| `CAFrameRateRangeDefault` | constant | `CAFrameRateRange.h` | No `CAFrameRateRange` value type or preferred-frame-rate bindings. |
-| `CAFrameRateRangeIsEqualToRange` | function | `CAFrameRateRange.h` | No `CAFrameRateRange` value type or preferred-frame-rate bindings. |
-| `CAFrameRateRangeMake` | function | `CAFrameRateRange.h` | No `CAFrameRateRange` value type or preferred-frame-rate bindings. |
-| `CAAction` | protocol | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `CAAutoresizingMask` | enum | `CALayer.h` | Layer bitmask enums for autoresizing / edge-antialiasing / masked-corners are not exposed. |
-| `CACornerMask` | enum | `CALayer.h` | Layer bitmask enums for autoresizing / edge-antialiasing / masked-corners are not exposed. |
-| `CADynamicRange` | typealias | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CADynamicRangeAutomatic` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CADynamicRangeConstrainedHigh` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CADynamicRangeHigh` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CADynamicRangeStandard` | constant | `CALayer.h` | HDR dynamic-range / tone-mapping APIs on `CALayer` / `CAMetalLayer` are not wrapped. |
-| `CAEdgeAntialiasingMask` | enum | `CALayer.h` | Layer bitmask enums for autoresizing / edge-antialiasing / masked-corners are not exposed. |
-| `CALayerContentsFilter` | typealias | `CALayer.h` | Layer contents-filter APIs are not exposed. |
-| `CALayerContentsFormat` | typealias | `CALayer.h` | Layer contents-format APIs are not exposed. |
-| `CALayerCornerCurve` | typealias | `CALayer.h` | Layer corner-curve APIs are not exposed. |
-| `CALayerDelegate` | protocol | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `CALayoutManager` | protocol | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `kCAContentsFormatGray8Uint` | constant | `CALayer.h` | Layer contents-format APIs are not exposed. |
-| `kCAContentsFormatRGBA16Float` | constant | `CALayer.h` | Layer contents-format APIs are not exposed. |
-| `kCAContentsFormatRGBA8Uint` | constant | `CALayer.h` | Layer contents-format APIs are not exposed. |
-| `kCACornerCurveCircular` | constant | `CALayer.h` | Layer corner-curve APIs are not exposed. |
-| `kCACornerCurveContinuous` | constant | `CALayer.h` | Layer corner-curve APIs are not exposed. |
-| `kCAFilterLinear` | constant | `CALayer.h` | Layer contents-filter APIs are not exposed. |
-| `kCAFilterNearest` | constant | `CALayer.h` | Layer contents-filter APIs are not exposed. |
-| `kCAFilterTrilinear` | constant | `CALayer.h` | Layer contents-filter APIs are not exposed. |
-| `kCAOnOrderIn` | constant | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `kCAOnOrderOut` | constant | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `kCATransition` | constant | `CALayer.h` | No CALayer action / delegate / layout-manager bridge or action-key constants. |
-| `CARemoteLayerClient` | interface | `CARemoteLayerClient.h` | Remote layer client/server APIs are not exposed. |
-| `CARemoteLayerServer` | interface | `CARemoteLayerServer.h` | Remote layer client/server APIs are not exposed. |
-| `kCARendererColorSpace` | constant | `CARenderer.h` | Renderer options do not expose the color-space key. |
-| `CATransform3DConcat` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DGetAffineTransform` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DInvert` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DIsAffine` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DMakeAffineTransform` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DMakeRotation` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DRotate` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DScale` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
-| `CATransform3DTranslate` | function | `CATransform3D.h` | Rotation / concat / invert / affine matrix helpers are not exposed on `Transform3D`. |
+None. All non-exempt QuartzCore `CA*.h` symbols from the audit are wrapped.
 
 ## ⏭️ EXEMPT
 | Symbol | Kind | Header | Reason | SDK attribute |

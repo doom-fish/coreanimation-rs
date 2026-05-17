@@ -1,3 +1,6 @@
+use apple_cf::cg::CGColorSpace;
+
+use crate::ca_edr_metadata::EDRMetadata;
 use crate::layer::{LayerLike, MetalLayer};
 
 impl MetalLayer {
@@ -49,6 +52,39 @@ impl MetalLayer {
     pub fn set_allows_next_drawable_timeout(&self, value: bool) {
         unsafe {
             crate::ffi::ca_metal_layer_set_allows_next_drawable_timeout(self.as_layer_ptr(), value)
+        };
+    }
+
+    #[must_use]
+    pub fn colorspace(&self) -> Option<CGColorSpace> {
+        let ptr = unsafe { crate::ffi::ca_metal_layer_get_colorspace(self.as_layer_ptr()) };
+        if ptr.is_null() {
+            None
+        } else {
+            Some(unsafe { CGColorSpace::from_raw(ptr) })
+        }
+    }
+
+    pub fn set_colorspace(&self, value: Option<&CGColorSpace>) {
+        unsafe {
+            crate::ffi::ca_metal_layer_set_colorspace(
+                self.as_layer_ptr(),
+                value.map_or(core::ptr::null_mut(), CGColorSpace::as_ptr),
+            )
+        };
+    }
+
+    #[must_use]
+    pub fn edr_metadata(&self) -> Option<EDRMetadata> {
+        unsafe { EDRMetadata::from_raw(crate::ffi::ca_metal_layer_get_edr_metadata(self.as_layer_ptr())) }
+    }
+
+    pub fn set_edr_metadata(&self, value: Option<&EDRMetadata>) {
+        unsafe {
+            crate::ffi::ca_metal_layer_set_edr_metadata(
+                self.as_layer_ptr(),
+                value.map_or(core::ptr::null_mut(), EDRMetadata::as_ptr),
+            )
         };
     }
 }

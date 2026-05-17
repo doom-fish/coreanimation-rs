@@ -6,10 +6,28 @@ import QuartzCore
 
 @_cdecl("ca_renderer_new")
 public func ca_renderer_new(_ textureHandle: UnsafeMutableRawPointer?, _ queueHandle: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    ca_renderer_new_with_options(textureHandle, queueHandle, nil)
+}
+
+@_cdecl("ca_renderer_new_with_options")
+public func ca_renderer_new_with_options(
+    _ textureHandle: UnsafeMutableRawPointer?,
+    _ queueHandle: UnsafeMutableRawPointer?,
+    _ colorSpaceHandle: UnsafeMutableRawPointer?
+) -> UnsafeMutableRawPointer? {
     guard let texture: MTLTexture = caBorrow(textureHandle) else { return nil }
     let queue: MTLCommandQueue? = caBorrow(queueHandle)
-    let options: [AnyHashable: Any]? = queue.map { [kCARendererMetalCommandQueue: $0] }
-    return caRetain(CARenderer(mtlTexture: texture, options: options))
+    let colorSpace: CGColorSpace? = caBorrow(colorSpaceHandle)
+
+    var options: [AnyHashable: Any] = [:]
+    if let queue {
+        options[kCARendererMetalCommandQueue] = queue
+    }
+    if let colorSpace {
+        options[kCARendererColorSpace] = colorSpace
+    }
+
+    return caRetain(CARenderer(mtlTexture: texture, options: options.isEmpty ? nil : options))
 }
 
 @_cdecl("ca_renderer_set_layer")

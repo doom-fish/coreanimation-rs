@@ -2,9 +2,9 @@
 
 Safe Rust bindings for Apple's [QuartzCore / Core Animation](https://developer.apple.com/documentation/quartzcore) framework on macOS.
 
-> **Status:** v0.2.1 preserves the original v0.1.0 public API and adds additive coverage for `CALayer`, `CAAnimation`, `CAPropertyAnimation`, `CAKeyframeAnimation`, `CABasicAnimation`, `CAAnimationGroup`, `CASpringAnimation`, `CATransition`, `CAMediaTiming`, `CAMediaTimingFunction`, `CATransaction`, `CADisplayLink`, `CAMetalLayer`, `CAMetalDisplayLink`, `CAValueFunction`, `CAGradientLayer`, `CATextLayer`, `CAShapeLayer`, `CATransformLayer`, `CAReplicatorLayer`, `CAEmitterLayer`, `CAScrollLayer`, and `CATiledLayer`.
+> **Status:** v0.2.2 preserves the original v0.1.0 public API and now wraps the full non-exempt QuartzCore `CA*.h` audit surface on macOS, including `Action`, `AnimationDelegate`, `FrameRateRange`, constraint/layout-manager APIs, HDR/EDR metadata, remote layers, renderer color-space configuration, and advanced `Transform3D` helpers.
 >
-> See [`COVERAGE.md`](COVERAGE.md) for the current coverage matrix and remaining QuartzCore gaps.
+> See [`COVERAGE.md`](COVERAGE.md) for the logical-area matrix and [`COVERAGE_AUDIT.md`](COVERAGE_AUDIT.md) for the symbol-by-symbol audit (`0` gaps, `1` deprecated exemption).
 
 ## Quick start
 
@@ -49,32 +49,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Highlights
 
-- `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `TransformLayer`, `ReplicatorLayer`, `ScrollLayer`, `TiledLayer`, `EmitterLayer`, `EmitterCell`, `MetalLayer`, and `ToneMapMode`
-- `Animation`, `PropertyAnimation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, and `Transition`, plus `TimingFunction`, `TimingFunctionName`, `ValueFunction`, `ValueFunctionName`, and `MediaTimingFillMode`
-- `Transaction` completion blocks, animation defaults, and a `TransactionLockGuard`
+- `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `TransformLayer`, `ReplicatorLayer`, `ScrollLayer`, `TiledLayer`, `EmitterLayer`, `EmitterCell`, `MetalLayer`, `ToneMapMode`, `DynamicRange`, `Action`, `LayerDelegate`, `Constraint`, and `ConstraintLayoutManager`
+- `Animation`, `AnimationDelegate`, `PropertyAnimation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, `Transition`, `FrameRateRange`, `TimingFunction`, `TimingFunctionName`, `ValueFunction`, `ValueFunctionName`, `MediaTimingFillMode`, and `current_media_time`
 - `DisplayLink` for `CVDisplayLink`, `QuartzDisplayLink` for `CADisplayLink`, and `MetalDisplayLink` / `MetalDisplayLinkUpdate` for `CAMetalDisplayLink`
-- `Renderer` for offscreen `CARenderer` rendering into `apple-metal` textures
+- `EDRMetadata`, `RemoteLayerClient`, `RemoteLayerServer`, `Renderer::new_with_color_space`, `CGColorSpace`, and `CGAffineTransform`
 - `Color` and `Path` helpers for Core Animation content types that `apple-cf` does not wrap yet
 
 ## Examples
 
-The crate now ships with 24 runnable examples: the original offscreen renderer smoke test, one focused example for each v0.2.0 logical area, and four v0.2.1 gap-closing examples.
+The crate now ships with 29 runnable examples: the original offscreen renderer smoke test, one focused example for each v0.2.0 / v0.2.1 logical area, and five v0.2.2 audit-closing examples.
 
 Run any example with:
 
 ```bash
-cargo run --example 11_ca_display_link_smoke
+cargo run --example 25_ca_animation_delegate
 ```
 
 Representative examples:
 
 - `01_layer_render_smoke` — offscreen `CARenderer` + Metal texture validation
-- `11_ca_display_link_smoke` — `QuartzDisplayLink` / `CADisplayLink`
-- `21_ca_property_animation_value_function` — `CAPropertyAnimation` / `CAValueFunction`
-- `22_ca_timing_function_objects` — `CAMediaTimingFunction` objects on `Animation` / `Transaction`
-- `24_ca_metal_display_link` — `CAMetalDisplayLink` delegate callbacks
+- `25_ca_animation_delegate` — `CAAnimationDelegate`, `CAFrameRateRange`, and `CACurrentMediaTime`
+- `26_ca_layer_advanced` — `CAAction`, advanced `CALayer` enums, constraints, and delegate hooks
+- `27_ca_edr_metadata` — `CAEDRMetadata` plus `CAMetalLayer` HDR / colorspace APIs
+- `28_ca_remote_layer_renderer` — remote layers plus `CARenderer` color-space configuration
+- `29_ca_transform3d` — advanced `CATransform3D` helpers and `CGAffineTransform` round-tripping
 
-Each v0.2.0 and v0.2.1 logical area also has a matching integration test under `tests/`.
+Each logical area has a matching integration test under `tests/`, with extra unit coverage for animation-delegate callbacks.
 
 ## License
 

@@ -108,6 +108,18 @@ public func ca_metal_display_link_set_preferred_frame_latency(_ handle: UnsafeMu
     box.link.preferredFrameLatency = value
 }
 
+@_cdecl("ca_metal_display_link_get_preferred_frame_rate_range")
+public func ca_metal_display_link_get_preferred_frame_rate_range(_ handle: UnsafeMutableRawPointer?, _ outRange: UnsafeMutableRawPointer?) {
+    guard #available(macOS 14.0, *), let box = caBorrowMetalDisplayLinkBox(handle), let outRange else { return }
+    _ = caWriteFrameRateRange(box.link.preferredFrameRateRange, out: outRange)
+}
+
+@_cdecl("ca_metal_display_link_set_preferred_frame_rate_range")
+public func ca_metal_display_link_set_preferred_frame_rate_range(_ handle: UnsafeMutableRawPointer?, _ rangeRaw: UnsafeRawPointer?) {
+    guard #available(macOS 14.0, *), let box = caBorrowMetalDisplayLinkBox(handle), let range = caReadFrameRateRange(rangeRaw) else { return }
+    box.link.preferredFrameRateRange = range
+}
+
 @_cdecl("ca_metal_display_link_set_delegate")
 public func ca_metal_display_link_set_delegate(
     _ handle: UnsafeMutableRawPointer?,

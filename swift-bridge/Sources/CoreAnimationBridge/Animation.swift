@@ -2,6 +2,105 @@ import CoreGraphics
 import Foundation
 import QuartzCore
 
+public typealias CAAnimationDidStartCallback = @convention(c) (
+    UnsafeMutableRawPointer?,
+    UnsafeMutableRawPointer?
+) -> Void
+
+public typealias CAAnimationDidStopCallback = @convention(c) (
+    UnsafeMutableRawPointer?,
+    UnsafeMutableRawPointer?,
+    Bool
+) -> Void
+
+final class CAAnimationDelegateBox: NSObject, CAAnimationDelegate {
+    var didStartCallback: CAAnimationDidStartCallback?
+    var didStartContext: UnsafeMutableRawPointer?
+    var didStopCallback: CAAnimationDidStopCallback?
+    var didStopContext: UnsafeMutableRawPointer?
+
+    func animationDidStart(_ anim: CAAnimation) {
+        didStartCallback?(didStartContext, caRetain(anim))
+    }
+
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        didStopCallback?(didStopContext, caRetain(anim), flag)
+    }
+}
+
+@_cdecl("ca_animation_delegate_new")
+public func ca_animation_delegate_new() -> UnsafeMutableRawPointer? {
+    caRetain(CAAnimationDelegateBox())
+}
+
+@_cdecl("ca_animation_delegate_set_did_start_callback")
+public func ca_animation_delegate_set_did_start_callback(
+    _ handle: UnsafeMutableRawPointer?,
+    _ callback: CAAnimationDidStartCallback?,
+    _ context: UnsafeMutableRawPointer?
+) {
+    guard let delegate: CAAnimationDelegateBox = caBorrow(handle) else { return }
+    delegate.didStartCallback = callback
+    delegate.didStartContext = context
+}
+
+@_cdecl("ca_animation_delegate_set_did_stop_callback")
+public func ca_animation_delegate_set_did_stop_callback(
+    _ handle: UnsafeMutableRawPointer?,
+    _ callback: CAAnimationDidStopCallback?,
+    _ context: UnsafeMutableRawPointer?
+) {
+    guard let delegate: CAAnimationDelegateBox = caBorrow(handle) else { return }
+    delegate.didStopCallback = callback
+    delegate.didStopContext = context
+}
+
+@_cdecl("ca_animation_set_delegate")
+public func ca_animation_set_delegate(_ handle: UnsafeMutableRawPointer?, _ delegateHandle: UnsafeMutableRawPointer?) {
+    guard let animation: CAAnimation = caBorrow(handle) else { return }
+    let delegate: CAAnimationDelegateBox? = caBorrow(delegateHandle)
+    animation.delegate = delegate
+}
+
+@_cdecl("ca_animation_supports_preferred_frame_rate_range")
+public func ca_animation_supports_preferred_frame_rate_range() -> Bool {
+    if #available(macOS 12.0, *) {
+        return true
+    }
+    return false
+}
+
+@_cdecl("ca_animation_get_preferred_frame_rate_range")
+public func ca_animation_get_preferred_frame_rate_range(_ handle: UnsafeMutableRawPointer?, _ outRange: UnsafeMutableRawPointer?) {
+    guard let animation: CAAnimation = caBorrow(handle), let outRange else { return }
+    if #available(macOS 12.0, *) {
+        _ = caWriteFrameRateRange(animation.preferredFrameRateRange, out: outRange)
+    } else {
+        let ptr = outRange.assumingMemoryBound(to: Float.self)
+        ptr[0] = 0
+        ptr[1] = 0
+        ptr[2] = 0
+    }
+}
+
+@_cdecl("ca_animation_set_preferred_frame_rate_range")
+public func ca_animation_set_preferred_frame_rate_range(_ handle: UnsafeMutableRawPointer?, _ rangeRaw: UnsafeRawPointer?) {
+    guard #available(macOS 12.0, *), let animation: CAAnimation = caBorrow(handle), let range = caReadFrameRateRange(rangeRaw) else { return }
+    animation.preferredFrameRateRange = range
+}
+
+@_cdecl("ca_animation_invoke_delegate_did_start")
+public func ca_animation_invoke_delegate_did_start(_ handle: UnsafeMutableRawPointer?) {
+    guard let animation: CAAnimation = caBorrow(handle) else { return }
+    animation.delegate?.animationDidStart?(animation)
+}
+
+@_cdecl("ca_animation_invoke_delegate_did_stop")
+public func ca_animation_invoke_delegate_did_stop(_ handle: UnsafeMutableRawPointer?, _ finished: Bool) {
+    guard let animation: CAAnimation = caBorrow(handle) else { return }
+    animation.delegate?.animationDidStop?(animation, finished: finished)
+}
+
 @_cdecl("ca_animation_new")
 public func ca_animation_new() -> UnsafeMutableRawPointer? {
     caRetain(CAAnimation())

@@ -1,4 +1,4 @@
-use apple_cf::cg::CGRect;
+use apple_cf::cg::{CGColorSpace, CGRect};
 use apple_metal::{CommandQueue, MetalTexture};
 
 use crate::display_link::CVTimeStamp;
@@ -11,10 +11,20 @@ handle_type!(Renderer);
 impl Renderer {
     #[must_use]
     pub fn new(texture: &MetalTexture, queue: Option<&CommandQueue>) -> Option<Self> {
+        Self::new_with_color_space(texture, queue, None)
+    }
+
+    #[must_use]
+    pub fn new_with_color_space(
+        texture: &MetalTexture,
+        queue: Option<&CommandQueue>,
+        color_space: Option<&CGColorSpace>,
+    ) -> Option<Self> {
         unsafe {
-            Self::from_raw(crate::ffi::ca_renderer_new(
+            Self::from_raw(crate::ffi::ca_renderer_new_with_options(
                 texture.as_ptr(),
                 queue.map_or(core::ptr::null_mut(), CommandQueue::as_ptr),
+                color_space.map_or(core::ptr::null_mut(), CGColorSpace::as_ptr),
             ))
         }
     }
