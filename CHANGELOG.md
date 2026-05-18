@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1] - 2026-05-18
+
+- Widen apple-metal version bound so the 0.x bump dep resolves. No source changes.
+
 ## [0.4.0] - 2026-05-18
 
 ### Breaking
