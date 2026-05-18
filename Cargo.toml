@@ -1,6 +1,6 @@
 [package]
 name = "coreanimation-rs"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/doom-fish/coreanimation-rs"
@@ -38,7 +38,7 @@ crate-type = ["lib"]
 
 [features]
 default = []
-cargo-clippy = []
+raw-ffi = []
 
 [dependencies]
 libc = "0.2"

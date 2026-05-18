@@ -1,3 +1,6 @@
+#![cfg_attr(not(feature = "raw-ffi"), allow(dead_code))]
+#![allow(missing_docs)]
+
 use core::ffi::{c_char, c_void};
 
 #[allow(clippy::upper_case_acronyms)]

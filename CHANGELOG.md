@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0] - 2026-05-18
+
+### Breaking
+
+- `pub mod ffi` is now feature-gated behind the new `raw-ffi` Cargo feature.
+  By default, raw FFI symbols are no longer reachable through
+  `coreanimation::ffi::*`. Users who need raw FFI access must opt in with
+  `features = ["raw-ffi"]`. The `CVSMPTETime`, `CVTime`, `CVTimeStamp`, and
+  `CVReturn` types remain available at the crate root and via
+  `coreanimation::display_link::*` regardless of feature configuration.
+- Dropped the dead `cargo-clippy = []` feature (vestigial; never used).
+
 ## [0.2.2] - 2026-05-17
 
 - Added additive wrappers for `Action`, `AnimationDelegate`, `FrameRateRange`, `current_media_time`, `Constraint`, `ConstraintLayoutManager`, `LayoutManager`, `EDRMetadata`, `RemoteLayerClient`, and `RemoteLayerServer`

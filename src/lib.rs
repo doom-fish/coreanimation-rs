@@ -49,7 +49,11 @@ pub mod color;
 pub mod display_link;
 pub mod emitter;
 pub mod error;
+#[cfg(feature = "raw-ffi")]
+#[cfg_attr(docsrs, doc(cfg(feature = "raw-ffi")))]
 pub mod ffi;
+#[cfg(not(feature = "raw-ffi"))]
+pub(crate) mod ffi;
 pub mod layer;
 pub mod path;
 pub mod renderer;
