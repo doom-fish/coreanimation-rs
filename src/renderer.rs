@@ -10,11 +10,13 @@ handle_type!(Renderer);
 
 impl Renderer {
     #[must_use]
+    /// Creates a `CARenderer` targeting a Metal texture.
     pub fn new(texture: &MetalTexture, queue: Option<&CommandQueue>) -> Option<Self> {
         Self::new_with_color_space(texture, queue, None)
     }
 
     #[must_use]
+    /// Creates a `CARenderer` targeting a Metal texture with an optional color space.
     pub fn new_with_color_space(
         texture: &MetalTexture,
         queue: Option<&CommandQueue>,
@@ -29,6 +31,7 @@ impl Renderer {
         }
     }
 
+    /// Sets the root layer rendered by the renderer.
     pub fn set_layer<L: LayerLike>(&self, layer: Option<&L>) {
         unsafe {
             crate::ffi::ca_renderer_set_layer(
@@ -39,6 +42,7 @@ impl Renderer {
     }
 
     #[must_use]
+    /// Returns the renderer's bounds.
     pub fn bounds(&self) -> CGRect {
         let mut rect = CGRect::zero();
         let ok = unsafe {
@@ -54,6 +58,7 @@ impl Renderer {
         }
     }
 
+    /// Sets the renderer's bounds.
     pub fn set_bounds(&self, rect: CGRect) {
         unsafe {
             crate::ffi::ca_renderer_set_bounds(
@@ -66,6 +71,7 @@ impl Renderer {
         };
     }
 
+    /// Begins a renderer frame at the supplied media time.
     pub fn begin_frame(&self, time: f64, time_stamp: Option<&CVTimeStamp>) {
         unsafe {
             crate::ffi::ca_renderer_begin_frame(
@@ -81,6 +87,7 @@ impl Renderer {
     }
 
     #[must_use]
+    /// Returns the bounds updated by the current renderer frame.
     pub fn update_bounds(&self) -> CGRect {
         let mut rect = CGRect::zero();
         let ok = unsafe {
@@ -96,28 +103,34 @@ impl Renderer {
         }
     }
 
+    /// Renders the current layer tree into the destination texture.
     pub fn render(&self) {
         unsafe { crate::ffi::ca_renderer_render(self.as_ptr()) };
     }
 
+    /// Ends the current renderer frame.
     pub fn end_frame(&self) {
         unsafe { crate::ffi::ca_renderer_end_frame(self.as_ptr()) };
     }
 
     #[must_use]
+    /// Returns the renderer-reported time for the next frame.
     pub fn next_frame_time(&self) -> f64 {
         unsafe { crate::ffi::ca_renderer_next_frame_time(self.as_ptr()) }
     }
 
+    /// Sets the renderer destination texture.
     pub fn set_destination(&self, texture: &MetalTexture) {
         unsafe { crate::ffi::ca_renderer_set_destination(self.as_ptr(), texture.as_ptr()) };
     }
 
+    /// Renders the current layer tree at the supplied media time.
     pub fn render_at_time(&self, time: f64) {
         unsafe { crate::ffi::ca_renderer_render_at_time(self.as_ptr(), time) };
     }
 }
 
+/// Copies 8-bit RGBA or BGRA texel bytes from a Metal texture.
 pub fn read_texture_bytes(texture: &MetalTexture) -> Result<Vec<u8>, CoreAnimationError> {
     let width = texture.width();
     let height = texture.height();

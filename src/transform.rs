@@ -2,6 +2,7 @@ use apple_cf::cg::CGAffineTransform;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
+/// Safe wrapper around `CATransform3D`. See <https://developer.apple.com/documentation/quartzcore/catransform3d>.
 pub struct Transform3D {
     pub m11: f64,
     pub m12: f64,
@@ -23,6 +24,7 @@ pub struct Transform3D {
 
 impl Transform3D {
     #[must_use]
+    /// Creates a `CATransform3D` from 16 matrix elements.
     pub const fn new(elements: [f64; 16]) -> Self {
         Self {
             m11: elements[0],
@@ -45,6 +47,7 @@ impl Transform3D {
     }
 
     #[must_use]
+    /// Returns the identity transform.
     pub const fn identity() -> Self {
         Self::new([
             1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
@@ -52,6 +55,7 @@ impl Transform3D {
     }
 
     #[must_use]
+    /// Returns a translation transform.
     pub const fn translation(tx: f64, ty: f64, tz: f64) -> Self {
         Self::new([
             1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, tx, ty, tz, 1.0,
@@ -59,6 +63,7 @@ impl Transform3D {
     }
 
     #[must_use]
+    /// Returns a scaling transform.
     pub const fn scale(sx: f64, sy: f64, sz: f64) -> Self {
         Self::new([
             sx, 0.0, 0.0, 0.0, 0.0, sy, 0.0, 0.0, 0.0, 0.0, sz, 0.0, 0.0, 0.0, 0.0, 1.0,
@@ -66,52 +71,62 @@ impl Transform3D {
     }
 
     #[must_use]
+    /// Returns a rotation transform around an axis.
     pub fn rotation(angle: f64, x: f64, y: f64, z: f64) -> Self {
         unsafe { CATransform3DMakeRotation(angle, x, y, z) }
     }
 
     #[must_use]
+    /// Returns this transform translated by the supplied offset.
     pub fn translated(self, tx: f64, ty: f64, tz: f64) -> Self {
         unsafe { CATransform3DTranslate(self, tx, ty, tz) }
     }
 
     #[must_use]
+    /// Returns this transform scaled by the supplied factors.
     pub fn scaled(self, sx: f64, sy: f64, sz: f64) -> Self {
         unsafe { CATransform3DScale(self, sx, sy, sz) }
     }
 
     #[must_use]
+    /// Returns this transform rotated around an axis.
     pub fn rotated(self, angle: f64, x: f64, y: f64, z: f64) -> Self {
         unsafe { CATransform3DRotate(self, angle, x, y, z) }
     }
 
     #[must_use]
+    /// Concatenates this transform with another transform.
     pub fn concat(self, other: Self) -> Self {
         unsafe { CATransform3DConcat(self, other) }
     }
 
     #[must_use]
+    /// Returns the inverse transform.
     pub fn inverted(self) -> Self {
         unsafe { CATransform3DInvert(self) }
     }
 
     #[must_use]
+    /// Builds a `CATransform3D` from a `CGAffineTransform`.
     pub fn from_affine(transform: CGAffineTransform) -> Self {
         unsafe { CATransform3DMakeAffineTransform(transform) }
     }
 
     #[must_use]
+    /// Returns whether the transform can be represented as an affine transform.
     pub fn is_affine(self) -> bool {
         unsafe { CATransform3DIsAffine(self) }
     }
 
     #[must_use]
+    /// Converts the transform to `CGAffineTransform` when possible.
     pub fn to_affine(self) -> Option<CGAffineTransform> {
         self.is_affine()
             .then(|| unsafe { CATransform3DGetAffineTransform(self) })
     }
 
     #[must_use]
+    /// Returns the transform matrix as a 16-element array.
     pub const fn as_array(&self) -> [f64; 16] {
         [
             self.m11, self.m12, self.m13, self.m14, self.m21, self.m22, self.m23, self.m24,

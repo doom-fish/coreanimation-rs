@@ -6,6 +6,7 @@ use crate::private::{cstring_from_str, handle_type};
 
 handle_type!(Animation);
 
+/// Trait for wrappers that can yield a `CAAnimation` handle.
 pub trait AnimationLike {
     fn as_animation_ptr(&self) -> *mut core::ffi::c_void;
 }
@@ -19,6 +20,7 @@ impl AnimationLike for Animation {
 macro_rules! animation_wrapper {
     ($name:ident, $ctor:expr) => {
         #[derive(Debug, Clone)]
+        /// Safe wrapper around the corresponding `Core Animation` animation type.
         pub struct $name {
             inner: Animation,
         }
@@ -39,6 +41,7 @@ macro_rules! animation_wrapper {
 
         impl $name {
             #[must_use]
+            /// Creates a new wrapper instance.
             pub fn new(key_path: Option<&str>) -> Option<Self> {
                 let key_path = key_path.and_then(cstring_from_str);
                 unsafe {
@@ -56,6 +59,7 @@ macro_rules! animation_wrapper {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CAAnimationCalculationMode` values.
 pub enum AnimationCalculationMode {
     Linear = 0,
     Discrete = 1,
@@ -78,6 +82,7 @@ impl AnimationCalculationMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CAAnimationRotationMode` values.
 pub enum RotationMode {
     None = 0,
     Auto = 1,
@@ -96,6 +101,7 @@ impl RotationMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CATransitionType` values.
 pub enum TransitionType {
     Fade = 0,
     MoveIn = 1,
@@ -116,6 +122,7 @@ impl TransitionType {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CATransitionSubtype` values.
 pub enum TransitionSubtype {
     None = 0,
     FromRight = 1,
@@ -141,58 +148,70 @@ animation_wrapper!(KeyframeAnimation, crate::ffi::ca_keyframe_animation_new);
 animation_wrapper!(SpringAnimation, crate::ffi::ca_spring_animation_new);
 
 #[derive(Debug, Clone)]
+/// Safe wrapper around `PropertyAnimation`.
 pub struct PropertyAnimation {
     inner: Animation,
 }
 
 #[derive(Debug, Clone)]
+/// Safe wrapper around `AnimationGroup`.
 pub struct AnimationGroup {
     inner: Animation,
 }
 
 #[derive(Debug, Clone)]
+/// Safe wrapper around `Transition`.
 pub struct Transition {
     inner: Animation,
 }
 
 impl Animation {
     #[must_use]
+    /// Creates a new `CAAnimation` wrapper.
     pub fn new() -> Option<Self> {
         unsafe { Self::from_raw(crate::ffi::ca_animation_new()) }
     }
 
     #[must_use]
+    /// Returns the animation's duration.
     pub fn duration(&self) -> f64 {
         unsafe { crate::ffi::ca_animation_get_duration(self.as_ptr()) }
     }
 
+    /// Sets the animation's duration.
     pub fn set_duration(&self, value: f64) {
         unsafe { crate::ffi::ca_animation_set_duration(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the animation's repeat count.
     pub fn repeat_count(&self) -> f32 {
         unsafe { crate::ffi::ca_animation_get_repeat_count(self.as_ptr()) }
     }
 
+    /// Sets the animation's repeat count.
     pub fn set_repeat_count(&self, value: f32) {
         unsafe { crate::ffi::ca_animation_set_repeat_count(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns whether the animation autoreverses.
     pub fn autoreverses(&self) -> bool {
         unsafe { crate::ffi::ca_animation_get_autoreverses(self.as_ptr()) }
     }
 
+    /// Sets the animation's autoreverses.
     pub fn set_autoreverses(&self, value: bool) {
         unsafe { crate::ffi::ca_animation_set_autoreverses(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns whether the animation removed on completion.
     pub fn removed_on_completion(&self) -> bool {
         unsafe { crate::ffi::ca_animation_get_removed_on_completion(self.as_ptr()) }
     }
 
+    /// Sets the animation's removed on completion.
     pub fn set_removed_on_completion(&self, value: bool) {
         unsafe { crate::ffi::ca_animation_set_removed_on_completion(self.as_ptr(), value) };
     }
@@ -200,6 +219,7 @@ impl Animation {
 
 impl PropertyAnimation {
     #[must_use]
+    /// Creates a new `CAPropertyAnimation` wrapper.
     pub fn new(key_path: Option<&str>) -> Option<Self> {
         let key_path = key_path.and_then(cstring_from_str);
         unsafe {
@@ -213,12 +233,14 @@ impl PropertyAnimation {
     }
 
     #[must_use]
+    /// Returns the property animation's key path.
     pub fn key_path(&self) -> Option<String> {
         take_c_string(unsafe {
             crate::ffi::ca_property_animation_get_key_path(self.as_animation_ptr())
         })
     }
 
+    /// Sets the property animation's key path.
     pub fn set_key_path(&self, key_path: &str) {
         if let Some(key_path) = cstring_from_str(key_path) {
             unsafe {
@@ -247,12 +269,14 @@ impl AnimationLike for PropertyAnimation {
 
 impl BasicAnimation {
     #[must_use]
+    /// Returns the basic animation's key path.
     pub fn key_path(&self) -> Option<String> {
         take_c_string(unsafe {
             crate::ffi::ca_property_animation_get_key_path(self.as_animation_ptr())
         })
     }
 
+    /// Sets the basic animation's key path.
     pub fn set_key_path(&self, key_path: &str) {
         if let Some(key_path) = cstring_from_str(key_path) {
             unsafe {
@@ -264,14 +288,17 @@ impl BasicAnimation {
         }
     }
 
+    /// Sets the basic animation's from number.
     pub fn set_from_number(&self, value: f64) {
         unsafe { crate::ffi::ca_basic_animation_set_from_number(self.as_animation_ptr(), value) };
     }
 
+    /// Sets the basic animation's to number.
     pub fn set_to_number(&self, value: f64) {
         unsafe { crate::ffi::ca_basic_animation_set_to_number(self.as_animation_ptr(), value) };
     }
 
+    /// Sets the basic animation's by number.
     pub fn set_by_number(&self, value: f64) {
         unsafe { crate::ffi::ca_basic_animation_set_by_number(self.as_animation_ptr(), value) };
     }
@@ -279,12 +306,14 @@ impl BasicAnimation {
 
 impl KeyframeAnimation {
     #[must_use]
+    /// Returns the keyframe animation's key path.
     pub fn key_path(&self) -> Option<String> {
         take_c_string(unsafe {
             crate::ffi::ca_property_animation_get_key_path(self.as_animation_ptr())
         })
     }
 
+    /// Sets the keyframe animation's key path.
     pub fn set_key_path(&self, key_path: &str) {
         if let Some(key_path) = cstring_from_str(key_path) {
             unsafe {
@@ -296,6 +325,7 @@ impl KeyframeAnimation {
         }
     }
 
+    /// Sets the keyframe animation's values.
     pub fn set_values(&self, values: &[f64]) {
         unsafe {
             crate::ffi::ca_keyframe_animation_set_values(
@@ -307,6 +337,7 @@ impl KeyframeAnimation {
     }
 
     #[must_use]
+    /// Returns the keyframe animation's values.
     pub fn values(&self) -> Vec<f64> {
         let count =
             unsafe { crate::ffi::ca_keyframe_animation_value_count(self.as_animation_ptr()) };
@@ -317,6 +348,7 @@ impl KeyframeAnimation {
             .collect()
     }
 
+    /// Sets the keyframe animation's path.
     pub fn set_path(&self, path: Option<&Path>) {
         unsafe {
             crate::ffi::ca_keyframe_animation_set_path(
@@ -327,6 +359,7 @@ impl KeyframeAnimation {
     }
 
     #[must_use]
+    /// Returns the keyframe animation's path.
     pub fn path(&self) -> Option<Path> {
         unsafe {
             Path::from_raw(crate::ffi::ca_keyframe_animation_get_path(
@@ -335,6 +368,7 @@ impl KeyframeAnimation {
         }
     }
 
+    /// Sets the keyframe animation's key times.
     pub fn set_key_times(&self, values: &[f64]) {
         unsafe {
             crate::ffi::ca_keyframe_animation_set_key_times(
@@ -346,6 +380,7 @@ impl KeyframeAnimation {
     }
 
     #[must_use]
+    /// Returns the keyframe animation's key times.
     pub fn key_times(&self) -> Vec<f64> {
         let count =
             unsafe { crate::ffi::ca_keyframe_animation_key_time_count(self.as_animation_ptr()) };
@@ -357,12 +392,14 @@ impl KeyframeAnimation {
     }
 
     #[must_use]
+    /// Returns the keyframe animation's calculation mode.
     pub fn calculation_mode(&self) -> AnimationCalculationMode {
         AnimationCalculationMode::from_raw(unsafe {
             crate::ffi::ca_keyframe_animation_get_calculation_mode(self.as_animation_ptr())
         })
     }
 
+    /// Sets the keyframe animation's calculation mode.
     pub fn set_calculation_mode(&self, value: AnimationCalculationMode) {
         unsafe {
             crate::ffi::ca_keyframe_animation_set_calculation_mode(
@@ -373,12 +410,14 @@ impl KeyframeAnimation {
     }
 
     #[must_use]
+    /// Returns the keyframe animation's rotation mode.
     pub fn rotation_mode(&self) -> RotationMode {
         RotationMode::from_raw(unsafe {
             crate::ffi::ca_keyframe_animation_get_rotation_mode(self.as_animation_ptr())
         })
     }
 
+    /// Sets the keyframe animation's rotation mode.
     pub fn set_rotation_mode(&self, value: RotationMode) {
         unsafe {
             crate::ffi::ca_keyframe_animation_set_rotation_mode(
@@ -391,12 +430,14 @@ impl KeyframeAnimation {
 
 impl SpringAnimation {
     #[must_use]
+    /// Returns the spring animation's key path.
     pub fn key_path(&self) -> Option<String> {
         take_c_string(unsafe {
             crate::ffi::ca_property_animation_get_key_path(self.as_animation_ptr())
         })
     }
 
+    /// Sets the spring animation's key path.
     pub fn set_key_path(&self, key_path: &str) {
         if let Some(key_path) = cstring_from_str(key_path) {
             unsafe {
@@ -409,37 +450,45 @@ impl SpringAnimation {
     }
 
     #[must_use]
+    /// Returns the spring animation's mass.
     pub fn mass(&self) -> f64 {
         unsafe { crate::ffi::ca_spring_animation_get_mass(self.as_animation_ptr()) }
     }
 
+    /// Sets the spring animation's mass.
     pub fn set_mass(&self, value: f64) {
         unsafe { crate::ffi::ca_spring_animation_set_mass(self.as_animation_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the spring animation's stiffness.
     pub fn stiffness(&self) -> f64 {
         unsafe { crate::ffi::ca_spring_animation_get_stiffness(self.as_animation_ptr()) }
     }
 
+    /// Sets the spring animation's stiffness.
     pub fn set_stiffness(&self, value: f64) {
         unsafe { crate::ffi::ca_spring_animation_set_stiffness(self.as_animation_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the spring animation's damping.
     pub fn damping(&self) -> f64 {
         unsafe { crate::ffi::ca_spring_animation_get_damping(self.as_animation_ptr()) }
     }
 
+    /// Sets the spring animation's damping.
     pub fn set_damping(&self, value: f64) {
         unsafe { crate::ffi::ca_spring_animation_set_damping(self.as_animation_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the spring animation's initial velocity.
     pub fn initial_velocity(&self) -> f64 {
         unsafe { crate::ffi::ca_spring_animation_get_initial_velocity(self.as_animation_ptr()) }
     }
 
+    /// Sets the spring animation's initial velocity.
     pub fn set_initial_velocity(&self, value: f64) {
         unsafe {
             crate::ffi::ca_spring_animation_set_initial_velocity(self.as_animation_ptr(), value)
@@ -447,6 +496,7 @@ impl SpringAnimation {
     }
 
     #[must_use]
+    /// Returns the spring animation's settling duration.
     pub fn settling_duration(&self) -> f64 {
         unsafe { crate::ffi::ca_spring_animation_get_settling_duration(self.as_animation_ptr()) }
     }
@@ -454,11 +504,13 @@ impl SpringAnimation {
 
 impl AnimationGroup {
     #[must_use]
+    /// Creates a new `CAAnimationGroup` wrapper.
     pub fn new() -> Option<Self> {
         unsafe { Animation::from_raw(crate::ffi::ca_animation_group_new()) }
             .map(|inner| Self { inner })
     }
 
+    /// Sets the animations contained in the animation group.
     pub fn set_animations(&self, animations: &[&dyn AnimationLike]) {
         let raw: Vec<*mut core::ffi::c_void> = animations
             .iter()
@@ -474,6 +526,7 @@ impl AnimationGroup {
     }
 
     #[must_use]
+    /// Returns the animations contained in the animation group.
     pub fn animations(&self) -> Vec<Animation> {
         let count =
             unsafe { crate::ffi::ca_animation_group_animation_count(self.as_animation_ptr()) };
@@ -504,46 +557,55 @@ impl AnimationLike for AnimationGroup {
 
 impl Transition {
     #[must_use]
+    /// Creates a new `CATransition` wrapper.
     pub fn new() -> Option<Self> {
         unsafe { Animation::from_raw(crate::ffi::ca_transition_new()) }.map(|inner| Self { inner })
     }
 
     #[must_use]
+    /// Returns the transition's transition type.
     pub fn transition_type(&self) -> TransitionType {
         TransitionType::from_raw(unsafe {
             crate::ffi::ca_transition_get_type(self.as_animation_ptr())
         })
     }
 
+    /// Sets the transition's transition type.
     pub fn set_transition_type(&self, value: TransitionType) {
         unsafe { crate::ffi::ca_transition_set_type(self.as_animation_ptr(), value as i32) };
     }
 
     #[must_use]
+    /// Returns the transition's subtype.
     pub fn subtype(&self) -> TransitionSubtype {
         TransitionSubtype::from_raw(unsafe {
             crate::ffi::ca_transition_get_subtype(self.as_animation_ptr())
         })
     }
 
+    /// Sets the transition's subtype.
     pub fn set_subtype(&self, value: TransitionSubtype) {
         unsafe { crate::ffi::ca_transition_set_subtype(self.as_animation_ptr(), value as i32) };
     }
 
     #[must_use]
+    /// Returns the transition's start progress.
     pub fn start_progress(&self) -> f32 {
         unsafe { crate::ffi::ca_transition_get_start_progress(self.as_animation_ptr()) }
     }
 
+    /// Sets the transition's start progress.
     pub fn set_start_progress(&self, value: f32) {
         unsafe { crate::ffi::ca_transition_set_start_progress(self.as_animation_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the transition's end progress.
     pub fn end_progress(&self) -> f32 {
         unsafe { crate::ffi::ca_transition_get_end_progress(self.as_animation_ptr()) }
     }
 
+    /// Sets the transition's end progress.
     pub fn set_end_progress(&self, value: f32) {
         unsafe { crate::ffi::ca_transition_set_end_progress(self.as_animation_ptr(), value) };
     }

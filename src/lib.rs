@@ -16,48 +16,88 @@
 
 mod private;
 
+/// `Core Animation` animation wrappers and related value enums.
 pub mod animation;
+/// Extensions for `CAAction` wrappers.
 pub mod ca_action;
+/// Extensions for `CAAnimation` wrappers.
 pub mod ca_animation;
+/// Helpers for `CAAnimationDelegate` callbacks.
 pub mod ca_animation_delegate;
+/// Extensions for `CAAnimationGroup` wrappers.
 pub mod ca_animation_group;
+/// Extensions for `CABasicAnimation` wrappers.
 pub mod ca_basic_animation;
+/// Extensions for `CAConstraint` and layout-manager wrappers.
 pub mod ca_constraint;
+/// Extensions for `CADisplayLink` wrappers.
 pub mod ca_display_link;
+/// Extensions for EDR metadata wrappers.
 pub mod ca_edr_metadata;
+/// Extensions for `CAEmitterLayer` wrappers.
 pub mod ca_emitter_layer;
+/// Extensions for frame-rate range helpers.
 pub mod ca_frame_rate_range;
+/// Extensions for `CAGradientLayer` wrappers.
 pub mod ca_gradient_layer;
+/// Extensions for `CAKeyframeAnimation` wrappers.
 pub mod ca_keyframe_animation;
+/// Extensions for `CALayer` wrappers.
 pub mod ca_layer;
+/// Extensions for `CAMediaTiming` and timing-function wrappers.
 pub mod ca_media_timing;
+/// Extensions for `CAMetalDisplayLink` wrappers.
 pub mod ca_metal_display_link;
+/// Extensions for `CAMetalLayer` wrappers.
 pub mod ca_metal_layer;
+/// Extensions for `CAPropertyAnimation` wrappers.
 pub mod ca_property_animation;
+/// Extensions for remote layer wrappers.
 pub mod ca_remote_layer;
+/// Extensions for `CAReplicatorLayer` wrappers.
 pub mod ca_replicator_layer;
+/// Extensions for `CAScrollLayer` wrappers.
 pub mod ca_scroll_layer;
+/// Extensions for `CAShapeLayer` wrappers.
 pub mod ca_shape_layer;
+/// Extensions for `CASpringAnimation` wrappers.
 pub mod ca_spring_animation;
+/// Extensions for `CATextLayer` wrappers.
 pub mod ca_text_layer;
+/// Extensions for `CATiledLayer` wrappers.
 pub mod ca_tiled_layer;
+/// Extensions for `CATransaction` helpers.
 pub mod ca_transaction;
+/// Extensions for `CATransformLayer` wrappers.
 pub mod ca_transform_layer;
+/// Extensions for `CATransition` wrappers.
 pub mod ca_transition;
+/// Extensions for `CAValueFunction` wrappers.
 pub mod ca_value_function;
+/// Color helpers backed by Core Graphics colors.
 pub mod color;
+/// `Core Video` display-link wrappers.
 pub mod display_link;
+/// Emitter layer and emitter cell wrappers.
 pub mod emitter;
+/// Error types used by the crate.
 pub mod error;
 #[cfg(feature = "raw-ffi")]
 #[cfg_attr(docsrs, doc(cfg(feature = "raw-ffi")))]
+/// Raw ``QuartzCore`` and `Core Video` FFI bindings.
 pub mod ffi;
 #[cfg(not(feature = "raw-ffi"))]
+/// Raw ``QuartzCore`` and `Core Video` FFI bindings.
 pub(crate) mod ffi;
+/// Layer wrappers, delegates, and related enums.
 pub mod layer;
+/// Path helpers backed by Core Graphics mutable paths.
 pub mod path;
+/// `CARenderer` wrappers and texture readback helpers.
 pub mod renderer;
+/// `CATransaction` helpers.
 pub mod transaction;
+/// `CATransform3D` helpers and conversions.
 pub mod transform;
 
 pub use animation::{
@@ -98,6 +138,7 @@ pub use transform::Transform3D;
 
 pub use apple_cf::cg::{CGAffineTransform, CGColorSpace, CGImage, CGPoint, CGRect, CGSize};
 
+/// Common ``QuartzCore``, `Core Video`, and helper re-exports.
 pub mod prelude {
     pub use crate::{
         current_media_time, read_texture_bytes, Action, ActionLike, Animation,

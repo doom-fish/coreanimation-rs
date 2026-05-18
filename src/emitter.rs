@@ -10,6 +10,7 @@ use crate::private::{cstring_from_str, handle_type};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CAEmitterLayerEmitterShape` values. See <https://developer.apple.com/documentation/quartzcore/caemitterlayeremittershape>.
 pub enum EmitterShape {
     Point = 0,
     Line = 1,
@@ -34,6 +35,7 @@ impl EmitterShape {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CAEmitterLayerEmitterMode` values. See <https://developer.apple.com/documentation/quartzcore/caemitterlayeremittermode>.
 pub enum EmitterMode {
     Points = 0,
     Outline = 1,
@@ -53,6 +55,7 @@ impl EmitterMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CAEmitterLayerRenderMode` values. See <https://developer.apple.com/documentation/quartzcore/caemitterlayerrendermode>.
 pub enum EmitterRenderMode {
     Unordered = 0,
     OldestFirst = 1,
@@ -74,16 +77,19 @@ impl EmitterRenderMode {
 }
 
 #[derive(Debug, Clone)]
+/// Safe wrapper around `CAEmitterLayer`. See <https://developer.apple.com/documentation/quartzcore/caemitterlayer>.
 pub struct EmitterLayer {
     inner: Layer,
 }
 
 impl EmitterLayer {
     #[must_use]
+    /// Creates a new `CAEmitterLayer` wrapper.
     pub fn new() -> Option<Self> {
         unsafe { Layer::from_raw(crate::ffi::ca_emitter_layer_new()) }.map(|inner| Self { inner })
     }
 
+    /// Sets the emitter layer cells.
     pub fn set_emitter_cells(&self, cells: &[&EmitterCell]) {
         let raw: Vec<*mut core::ffi::c_void> = cells.iter().map(|cell| cell.as_ptr()).collect();
         unsafe {
@@ -96,6 +102,7 @@ impl EmitterLayer {
     }
 
     #[must_use]
+    /// Returns the emitter layer cells.
     pub fn emitter_cells(&self) -> Vec<EmitterCell> {
         let count = unsafe { crate::ffi::ca_emitter_layer_emitter_cell_count(self.as_layer_ptr()) };
         (0..count)
@@ -109,24 +116,29 @@ impl EmitterLayer {
     }
 
     #[must_use]
+    /// Returns the emitter layer's birth rate.
     pub fn birth_rate(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_layer_get_birth_rate(self.as_layer_ptr()) }
     }
 
+    /// Sets the emitter layer's birth rate.
     pub fn set_birth_rate(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_layer_set_birth_rate(self.as_layer_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter layer's lifetime.
     pub fn lifetime(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_layer_get_lifetime(self.as_layer_ptr()) }
     }
 
+    /// Sets the emitter layer's lifetime.
     pub fn set_lifetime(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_layer_set_lifetime(self.as_layer_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter layer's emitter position.
     pub fn emitter_position(&self) -> CGPoint {
         let mut point = CGPoint::zero();
         let ok = unsafe {
@@ -142,6 +154,7 @@ impl EmitterLayer {
         }
     }
 
+    /// Sets the emitter layer's emitter position.
     pub fn set_emitter_position(&self, value: CGPoint) {
         unsafe {
             crate::ffi::ca_emitter_layer_set_emitter_position(self.as_layer_ptr(), value.x, value.y)
@@ -149,6 +162,7 @@ impl EmitterLayer {
     }
 
     #[must_use]
+    /// Returns the emitter layer's emitter size.
     pub fn emitter_size(&self) -> CGSize {
         let mut size = CGSize::zero();
         let ok = unsafe {
@@ -164,6 +178,7 @@ impl EmitterLayer {
         }
     }
 
+    /// Sets the emitter layer's emitter size.
     pub fn set_emitter_size(&self, value: CGSize) {
         unsafe {
             crate::ffi::ca_emitter_layer_set_emitter_size(
@@ -175,12 +190,14 @@ impl EmitterLayer {
     }
 
     #[must_use]
+    /// Returns the emitter layer's emitter shape.
     pub fn emitter_shape(&self) -> EmitterShape {
         EmitterShape::from_raw(unsafe {
             crate::ffi::ca_emitter_layer_get_emitter_shape(self.as_layer_ptr())
         })
     }
 
+    /// Sets the emitter layer's emitter shape.
     pub fn set_emitter_shape(&self, value: EmitterShape) {
         unsafe {
             crate::ffi::ca_emitter_layer_set_emitter_shape(self.as_layer_ptr(), value as i32)
@@ -188,41 +205,49 @@ impl EmitterLayer {
     }
 
     #[must_use]
+    /// Returns the emitter layer's emitter mode.
     pub fn emitter_mode(&self) -> EmitterMode {
         EmitterMode::from_raw(unsafe {
             crate::ffi::ca_emitter_layer_get_emitter_mode(self.as_layer_ptr())
         })
     }
 
+    /// Sets the emitter layer's emitter mode.
     pub fn set_emitter_mode(&self, value: EmitterMode) {
         unsafe { crate::ffi::ca_emitter_layer_set_emitter_mode(self.as_layer_ptr(), value as i32) };
     }
 
     #[must_use]
+    /// Returns the emitter layer's render mode.
     pub fn render_mode(&self) -> EmitterRenderMode {
         EmitterRenderMode::from_raw(unsafe {
             crate::ffi::ca_emitter_layer_get_render_mode(self.as_layer_ptr())
         })
     }
 
+    /// Sets the emitter layer's render mode.
     pub fn set_render_mode(&self, value: EmitterRenderMode) {
         unsafe { crate::ffi::ca_emitter_layer_set_render_mode(self.as_layer_ptr(), value as i32) };
     }
 
     #[must_use]
+    /// Returns the emitter layer's velocity.
     pub fn velocity(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_layer_get_velocity(self.as_layer_ptr()) }
     }
 
+    /// Sets the emitter layer's velocity.
     pub fn set_velocity(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_layer_set_velocity(self.as_layer_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter layer's scale.
     pub fn scale(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_layer_get_scale(self.as_layer_ptr()) }
     }
 
+    /// Sets the emitter layer's scale.
     pub fn set_scale(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_layer_set_scale(self.as_layer_ptr(), value) };
     }
@@ -246,10 +271,12 @@ handle_type!(EmitterCell);
 
 impl EmitterCell {
     #[must_use]
+    /// Creates a new `CAEmitterCell` wrapper.
     pub fn new() -> Option<Self> {
         unsafe { Self::from_raw(crate::ffi::ca_emitter_cell_new()) }
     }
 
+    /// Sets the emitter cell's name.
     pub fn set_name(&self, value: &str) {
         if let Some(value) = cstring_from_str(value) {
             unsafe { crate::ffi::ca_emitter_cell_set_name(self.as_ptr(), value.as_ptr()) };
@@ -257,73 +284,89 @@ impl EmitterCell {
     }
 
     #[must_use]
+    /// Returns the emitter cell's name.
     pub fn name(&self) -> Option<String> {
         take_c_string(unsafe { crate::ffi::ca_emitter_cell_get_name(self.as_ptr()) })
     }
 
     #[must_use]
+    /// Returns whether the emitter cell is enabled.
     pub fn enabled(&self) -> bool {
         unsafe { crate::ffi::ca_emitter_cell_get_enabled(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's enabled.
     pub fn set_enabled(&self, value: bool) {
         unsafe { crate::ffi::ca_emitter_cell_set_enabled(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter cell's birth rate.
     pub fn birth_rate(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_cell_get_birth_rate(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's birth rate.
     pub fn set_birth_rate(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_cell_set_birth_rate(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter cell's lifetime.
     pub fn lifetime(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_cell_get_lifetime(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's lifetime.
     pub fn set_lifetime(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_cell_set_lifetime(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter cell's velocity.
     pub fn velocity(&self) -> f64 {
         unsafe { crate::ffi::ca_emitter_cell_get_velocity(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's velocity.
     pub fn set_velocity(&self, value: f64) {
         unsafe { crate::ffi::ca_emitter_cell_set_velocity(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter cell's scale.
     pub fn scale(&self) -> f64 {
         unsafe { crate::ffi::ca_emitter_cell_get_scale(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's scale.
     pub fn set_scale(&self, value: f64) {
         unsafe { crate::ffi::ca_emitter_cell_set_scale(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter cell's emission range.
     pub fn emission_range(&self) -> f64 {
         unsafe { crate::ffi::ca_emitter_cell_get_emission_range(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's emission range.
     pub fn set_emission_range(&self, value: f64) {
         unsafe { crate::ffi::ca_emitter_cell_set_emission_range(self.as_ptr(), value) };
     }
 
     #[must_use]
+    /// Returns the emitter cell's emission longitude.
     pub fn emission_longitude(&self) -> f64 {
         unsafe { crate::ffi::ca_emitter_cell_get_emission_longitude(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's emission longitude.
     pub fn set_emission_longitude(&self, value: f64) {
         unsafe { crate::ffi::ca_emitter_cell_set_emission_longitude(self.as_ptr(), value) };
     }
 
+    /// Sets the emitter cell color.
     pub fn set_color(&self, color: Option<&Color>) {
         unsafe {
             crate::ffi::ca_emitter_cell_set_color(
@@ -334,10 +377,12 @@ impl EmitterCell {
     }
 
     #[must_use]
+    /// Returns the emitter cell color.
     pub fn color(&self) -> Option<Color> {
         unsafe { Color::from_raw(crate::ffi::ca_emitter_cell_get_color(self.as_ptr())) }
     }
 
+    /// Sets the emitter cell contents image.
     pub fn set_contents(&self, image: Option<&CGImage>) {
         unsafe {
             crate::ffi::ca_emitter_cell_set_contents(
@@ -348,6 +393,7 @@ impl EmitterCell {
     }
 
     #[must_use]
+    /// Returns the emitter cell contents image.
     pub fn contents(&self) -> Option<CGImage> {
         let ptr = unsafe { crate::ffi::ca_emitter_cell_get_contents(self.as_ptr()) };
         if ptr.is_null() {
@@ -358,10 +404,12 @@ impl EmitterCell {
     }
 
     #[must_use]
+    /// Returns the emitter cell's alpha speed.
     pub fn alpha_speed(&self) -> f32 {
         unsafe { crate::ffi::ca_emitter_cell_get_alpha_speed(self.as_ptr()) }
     }
 
+    /// Sets the emitter cell's alpha speed.
     pub fn set_alpha_speed(&self, value: f32) {
         unsafe { crate::ffi::ca_emitter_cell_set_alpha_speed(self.as_ptr(), value) };
     }

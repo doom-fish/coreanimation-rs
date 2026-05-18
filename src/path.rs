@@ -6,18 +6,22 @@ handle_type!(Path);
 
 impl Path {
     #[must_use]
+    /// Creates a new mutable path.
     pub fn new() -> Option<Self> {
         unsafe { Self::from_raw(crate::ffi::ca_path_new_mutable()) }
     }
 
+    /// Moves the current point to the supplied coordinates.
     pub fn move_to(&self, x: f64, y: f64) {
         unsafe { crate::ffi::ca_path_move_to(self.as_ptr(), x, y) };
     }
 
+    /// Appends a line segment to the path.
     pub fn add_line_to(&self, x: f64, y: f64) {
         unsafe { crate::ffi::ca_path_add_line_to(self.as_ptr(), x, y) };
     }
 
+    /// Appends a rectangle to the path.
     pub fn add_rect(&self, rect: CGRect) {
         unsafe {
             crate::ffi::ca_path_add_rect(
@@ -30,6 +34,7 @@ impl Path {
         };
     }
 
+    /// Appends an ellipse to the path.
     pub fn add_ellipse(&self, rect: CGRect) {
         unsafe {
             crate::ffi::ca_path_add_ellipse(
@@ -42,11 +47,13 @@ impl Path {
         };
     }
 
+    /// Closes the current subpath.
     pub fn close_subpath(&self) {
         unsafe { crate::ffi::ca_path_close_subpath(self.as_ptr()) };
     }
 
     #[must_use]
+    /// Returns the path bounding box.
     pub fn bounding_box(&self) -> CGRect {
         let mut rect = CGRect::zero();
         let ok = unsafe {

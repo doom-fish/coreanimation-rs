@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.1] - 2026-05-18
+
+- Added one-line rustdoc coverage across the core layer, animation, display-link, emitter, renderer, transaction, constraint, path, and transform surfaces, lifting measured public-item coverage above 80%.
+
 ## [0.5.0] - 2026-05-18
 
 ### Breaking

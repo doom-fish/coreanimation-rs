@@ -8,6 +8,7 @@ handle_type!(LayoutManager);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
+/// Mirrors `CAConstraintAttribute` values. See <https://developer.apple.com/documentation/quartzcore/caconstraintattribute>.
 pub enum ConstraintAttribute {
     MinX = 0,
     MidX = 1,
@@ -20,6 +21,7 @@ pub enum ConstraintAttribute {
 }
 
 impl ConstraintAttribute {
+    /// Converts a raw `Core Animation` value into this type.
     pub(crate) const fn from_raw(value: i32) -> Self {
         match value {
             1 => Self::MidX,
@@ -35,12 +37,14 @@ impl ConstraintAttribute {
 }
 
 #[derive(Debug, Clone)]
+/// Safe wrapper around `CAConstraintLayoutManager`. See <https://developer.apple.com/documentation/quartzcore/caconstraintlayoutmanager>.
 pub struct ConstraintLayoutManager {
     inner: LayoutManager,
 }
 
 impl ConstraintLayoutManager {
     #[must_use]
+    /// Creates a new `CAConstraintLayoutManager` wrapper.
     pub fn new() -> Option<Self> {
         unsafe { LayoutManager::from_raw(crate::ffi::ca_constraint_layout_manager_new()) }
             .map(|inner| Self { inner })
@@ -57,6 +61,7 @@ impl Deref for ConstraintLayoutManager {
 
 impl Constraint {
     #[must_use]
+    /// Creates a `CAConstraint` from source and target attributes.
     pub fn new(
         attribute: ConstraintAttribute,
         source_name: &str,
@@ -77,6 +82,7 @@ impl Constraint {
     }
 
     #[must_use]
+    /// Creates a `CAConstraint` with a constant offset.
     pub fn with_offset(
         attribute: ConstraintAttribute,
         source_name: &str,
@@ -87,6 +93,7 @@ impl Constraint {
     }
 
     #[must_use]
+    /// Creates a `CAConstraint` relative to another named attribute.
     pub fn relative_to(
         attribute: ConstraintAttribute,
         source_name: &str,
@@ -96,6 +103,7 @@ impl Constraint {
     }
 
     #[must_use]
+    /// Returns the constraint's attribute.
     pub fn attribute(&self) -> ConstraintAttribute {
         ConstraintAttribute::from_raw(unsafe {
             crate::ffi::ca_constraint_get_attribute(self.as_ptr())
@@ -103,11 +111,13 @@ impl Constraint {
     }
 
     #[must_use]
+    /// Returns the constraint's source name.
     pub fn source_name(&self) -> Option<String> {
         take_c_string(unsafe { crate::ffi::ca_constraint_get_source_name(self.as_ptr()) })
     }
 
     #[must_use]
+    /// Returns the constraint's source attribute.
     pub fn source_attribute(&self) -> ConstraintAttribute {
         ConstraintAttribute::from_raw(unsafe {
             crate::ffi::ca_constraint_get_source_attribute(self.as_ptr())
@@ -115,11 +125,13 @@ impl Constraint {
     }
 
     #[must_use]
+    /// Returns the constraint's scale.
     pub fn scale(&self) -> f64 {
         unsafe { crate::ffi::ca_constraint_get_scale(self.as_ptr()) }
     }
 
     #[must_use]
+    /// Returns the constraint's offset.
     pub fn offset(&self) -> f64 {
         unsafe { crate::ffi::ca_constraint_get_offset(self.as_ptr()) }
     }
