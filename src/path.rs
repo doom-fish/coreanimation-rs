@@ -20,13 +20,25 @@ impl Path {
 
     pub fn add_rect(&self, rect: CGRect) {
         unsafe {
-            crate::ffi::ca_path_add_rect(self.as_ptr(), rect.x, rect.y, rect.width, rect.height)
+            crate::ffi::ca_path_add_rect(
+                self.as_ptr(),
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
+            )
         };
     }
 
     pub fn add_ellipse(&self, rect: CGRect) {
         unsafe {
-            crate::ffi::ca_path_add_ellipse(self.as_ptr(), rect.x, rect.y, rect.width, rect.height)
+            crate::ffi::ca_path_add_ellipse(
+                self.as_ptr(),
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
+            )
         };
     }
 

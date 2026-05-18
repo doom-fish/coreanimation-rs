@@ -58,10 +58,10 @@ impl Renderer {
         unsafe {
             crate::ffi::ca_renderer_set_bounds(
                 self.as_ptr(),
-                rect.x,
-                rect.y,
-                rect.width,
-                rect.height,
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
             )
         };
     }

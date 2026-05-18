@@ -662,7 +662,13 @@ impl Layer {
 
     pub fn set_frame(&self, rect: CGRect) {
         unsafe {
-            crate::ffi::ca_layer_set_frame(self.as_ptr(), rect.x, rect.y, rect.width, rect.height)
+            crate::ffi::ca_layer_set_frame(
+                self.as_ptr(),
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
+            )
         };
     }
 
@@ -684,7 +690,13 @@ impl Layer {
 
     pub fn set_bounds(&self, rect: CGRect) {
         unsafe {
-            crate::ffi::ca_layer_set_bounds(self.as_ptr(), rect.x, rect.y, rect.width, rect.height)
+            crate::ffi::ca_layer_set_bounds(
+                self.as_ptr(),
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
+            )
         };
     }
 

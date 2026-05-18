@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0] - 2026-05-18
+
+### Breaking
+
+- Bumped `apple-cf` support to `>=0.7, <0.9` so the crate resolves `apple-cf` 0.8.x, including the canonical nested `CGRect { origin, size }` layout.
+- Migrated all `CGRect` field access sites in `src/renderer.rs`, `src/ca_scroll_layer.rs`, `src/path.rs`, and `src/layer.rs` from flat fields (`rect.x`, `rect.y`, `rect.width`, `rect.height`) to nested accessors (`rect.origin.x`, `rect.origin.y`, `rect.size.width`, `rect.size.height`).
+- Bumped crate version from `0.3.0` to `0.4.0` for the dependency-driven breaking change.
+
 ## [0.3.0] - 2026-05-18
 
 ### Breaking

@@ -72,10 +72,10 @@ impl ScrollLayer {
         unsafe {
             crate::ffi::ca_scroll_layer_scroll_to_rect(
                 self.as_layer_ptr(),
-                rect.x,
-                rect.y,
-                rect.width,
-                rect.height,
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
             )
         };
     }
