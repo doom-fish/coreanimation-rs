@@ -3,17 +3,7 @@
 
 use core::ffi::{c_char, c_void};
 
-#[allow(clippy::upper_case_acronyms)]
-pub type CVDisplayLinkOutputCallback = Option<
-    unsafe extern "C" fn(
-        display_link: *mut c_void,
-        in_now: *const CVTimeStamp,
-        in_output_time: *const CVTimeStamp,
-        flags_in: u64,
-        flags_out: *mut u64,
-        display_link_context: *mut c_void,
-    ) -> i32,
->;
+pub use apple_cf::raw::{CVDisplayLinkOutputCallback, CVSMPTETime, CVTime, CVTimeStamp};
 
 #[allow(clippy::upper_case_acronyms)]
 pub type TransactionCompletionCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
@@ -47,42 +37,6 @@ pub type LayerActionCallback = Option<
 #[allow(clippy::upper_case_acronyms)]
 pub type MetalDisplayLinkUpdateCallback =
     Option<unsafe extern "C" fn(context: *mut c_void, update_handle: *mut c_void)>;
-
-#[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct CVSMPTETime {
-    pub subframes: i16,
-    pub subframe_divisor: i16,
-    pub counter: u32,
-    pub type_: u32,
-    pub flags: u32,
-    pub hours: i16,
-    pub minutes: i16,
-    pub seconds: i16,
-    pub frames: i16,
-}
-
-#[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct CVTime {
-    pub time_value: i64,
-    pub time_scale: i32,
-    pub flags: i32,
-}
-
-#[repr(C)]
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct CVTimeStamp {
-    pub version: u32,
-    pub video_time_scale: i32,
-    pub video_time: i64,
-    pub host_time: u64,
-    pub rate_scalar: f64,
-    pub video_refresh_period: i64,
-    pub smpte_time: CVSMPTETime,
-    pub flags: u64,
-    pub reserved: u64,
-}
 
 unsafe extern "C" {
     pub fn ca_retain(handle: *mut c_void) -> *mut c_void;

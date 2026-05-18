@@ -1,8 +1,7 @@
 use core::ffi::c_void;
 
 pub use crate::ffi::{CVSMPTETime, CVTime, CVTimeStamp};
-
-pub type CVReturn = i32;
+pub use apple_cf::raw::CVReturn;
 
 #[derive(Debug)]
 pub struct DisplayLink {
@@ -104,21 +103,23 @@ impl DisplayLink {
     }
 
     pub fn current_time(&self) -> Result<CVTimeStamp, CVReturn> {
-        let mut out_time = CVTimeStamp::default();
-        let status = unsafe { crate::ffi::CVDisplayLinkGetCurrentTime(self.ptr, &mut out_time) };
+        let mut out_time = core::mem::MaybeUninit::<CVTimeStamp>::zeroed();
+        let status =
+            unsafe { crate::ffi::CVDisplayLinkGetCurrentTime(self.ptr, out_time.as_mut_ptr()) };
         if status == 0 {
-            Ok(out_time)
+            Ok(unsafe { out_time.assume_init() })
         } else {
             Err(status)
         }
     }
 
     pub fn translate_time(&self, in_time: &CVTimeStamp) -> Result<CVTimeStamp, CVReturn> {
-        let mut out_time = CVTimeStamp::default();
-        let status =
-            unsafe { crate::ffi::CVDisplayLinkTranslateTime(self.ptr, in_time, &mut out_time) };
+        let mut out_time = core::mem::MaybeUninit::<CVTimeStamp>::zeroed();
+        let status = unsafe {
+            crate::ffi::CVDisplayLinkTranslateTime(self.ptr, in_time, out_time.as_mut_ptr())
+        };
         if status == 0 {
-            Ok(out_time)
+            Ok(unsafe { out_time.assume_init() })
         } else {
             Err(status)
         }

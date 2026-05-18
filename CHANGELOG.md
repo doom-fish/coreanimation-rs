@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0] - 2026-05-18
+
+### Breaking
+
+- Re-exported `CVDisplayLinkOutputCallback`, `CVSMPTETime`, `CVTime`, `CVTimeStamp`, and `CVReturn` from `apple-cf` instead of maintaining duplicate local definitions.
+- Enabled the `cv` feature on `apple-cf` so the canonical Core Video raw types back the display-link API surface.
+
 ## [0.4.2] - 2026-05-18
 
 - Widen apple-cf version bound to `<0.10` so 0.9.x resolves.
