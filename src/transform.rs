@@ -158,3 +158,71 @@ unsafe extern "C" {
     fn CATransform3DIsAffine(transform: Transform3D) -> bool;
     fn CATransform3DGetAffineTransform(transform: Transform3D) -> CGAffineTransform;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Transform3D;
+    use apple_cf::cg::CGAffineTransform;
+
+    fn assert_close(left: f64, right: f64) {
+        assert!((left - right).abs() < 1e-9, "expected {left} to match {right}");
+    }
+
+    fn assert_transform_close(left: Transform3D, right: Transform3D) {
+        for (left, right) in left.as_array().into_iter().zip(right.as_array()) {
+            assert_close(left, right);
+        }
+    }
+
+    fn assert_affine_close(left: CGAffineTransform, right: CGAffineTransform) {
+        assert_close(left.a, right.a);
+        assert_close(left.b, right.b);
+        assert_close(left.c, right.c);
+        assert_close(left.d, right.d);
+        assert_close(left.tx, right.tx);
+        assert_close(left.ty, right.ty);
+    }
+
+    #[test]
+    fn identity_and_default_match() {
+        assert_transform_close(Transform3D::default(), Transform3D::identity());
+    }
+
+    #[test]
+    fn translation_populates_the_last_row() {
+        assert_transform_close(
+            Transform3D::translation(2.0, 3.0, 4.0),
+            Transform3D::new([
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                2.0, 3.0, 4.0, 1.0,
+            ]),
+        );
+    }
+
+    #[test]
+    fn scale_populates_the_diagonal() {
+        assert_transform_close(
+            Transform3D::scale(2.0, 3.0, 4.0),
+            Transform3D::new([
+                2.0, 0.0, 0.0, 0.0,
+                0.0, 3.0, 0.0, 0.0,
+                0.0, 0.0, 4.0, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+            ]),
+        );
+    }
+
+    #[test]
+    fn affine_round_trip_preserves_values() {
+        let affine = CGAffineTransform::new(1.0, 0.25, -0.5, 2.0, 3.0, 4.0);
+        let transform = Transform3D::from_affine(affine);
+
+        assert!(transform.is_affine());
+        let round_trip = transform
+            .to_affine()
+            .expect("affine transforms should round-trip as affine");
+        assert_affine_close(round_trip, affine);
+    }
+}

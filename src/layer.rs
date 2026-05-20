@@ -1451,3 +1451,73 @@ fn take_c_string(ptr: *mut libc::c_char) -> Option<String> {
     unsafe { libc::free(ptr.cast()) };
     Some(value)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        AutoresizingMask, ContentsFilter, ContentsFormat, ContentsGravity, CornerCurve,
+        CornerMask, DynamicRange, EdgeAntialiasingMask, LayerActionKeys, ToneMapMode,
+    };
+
+    #[test]
+    fn contents_gravity_from_raw_covers_known_and_unknown_values() {
+        assert_eq!(ContentsGravity::from_raw(0), ContentsGravity::Center);
+        assert_eq!(ContentsGravity::from_raw(1), ContentsGravity::Top);
+        assert_eq!(ContentsGravity::from_raw(8), ContentsGravity::BottomRight);
+        assert_eq!(ContentsGravity::from_raw(10), ContentsGravity::ResizeAspect);
+        assert_eq!(ContentsGravity::from_raw(11), ContentsGravity::ResizeAspectFill);
+        assert_eq!(ContentsGravity::from_raw(-1), ContentsGravity::Resize);
+    }
+
+    #[test]
+    fn tone_and_contents_enums_round_trip_from_raw_values() {
+        assert_eq!(ToneMapMode::from_raw(-1), ToneMapMode::Automatic);
+        assert_eq!(ToneMapMode::from_raw(1), ToneMapMode::Never);
+        assert_eq!(ToneMapMode::from_raw(2), ToneMapMode::IfSupported);
+        assert_eq!(ContentsFormat::from_raw(-1), ContentsFormat::RGBA8Uint);
+        assert_eq!(ContentsFormat::from_raw(1), ContentsFormat::RGBA16Float);
+        assert_eq!(ContentsFormat::from_raw(2), ContentsFormat::Gray8Uint);
+        assert_eq!(ContentsFormat::from_raw(3), ContentsFormat::Automatic);
+        assert_eq!(ContentsFilter::from_raw(-1), ContentsFilter::Nearest);
+        assert_eq!(ContentsFilter::from_raw(1), ContentsFilter::Linear);
+        assert_eq!(ContentsFilter::from_raw(2), ContentsFilter::Trilinear);
+    }
+
+    #[test]
+    fn corner_and_dynamic_range_enums_round_trip_from_raw_values() {
+        assert_eq!(CornerCurve::from_raw(-1), CornerCurve::Circular);
+        assert_eq!(CornerCurve::from_raw(1), CornerCurve::Continuous);
+        assert_eq!(DynamicRange::from_raw(-1), DynamicRange::Automatic);
+        assert_eq!(DynamicRange::from_raw(1), DynamicRange::Standard);
+        assert_eq!(DynamicRange::from_raw(2), DynamicRange::ConstrainedHigh);
+        assert_eq!(DynamicRange::from_raw(3), DynamicRange::High);
+    }
+
+    #[test]
+    fn bitmask_helpers_support_combination_and_contains_checks() {
+        let mut autoresizing = AutoresizingMask::empty();
+        autoresizing |= AutoresizingMask::WIDTH_SIZABLE;
+        autoresizing |= AutoresizingMask::MIN_Y_MARGIN;
+        assert!(autoresizing.contains(AutoresizingMask::WIDTH_SIZABLE));
+        assert!(autoresizing.contains(AutoresizingMask::MIN_Y_MARGIN));
+        assert_eq!(
+            (autoresizing & AutoresizingMask::WIDTH_SIZABLE).bits(),
+            AutoresizingMask::WIDTH_SIZABLE.bits()
+        );
+
+        let edges = EdgeAntialiasingMask::LEFT_EDGE | EdgeAntialiasingMask::TOP_EDGE;
+        assert!(edges.contains(EdgeAntialiasingMask::LEFT_EDGE));
+        assert!(!edges.contains(EdgeAntialiasingMask::RIGHT_EDGE));
+
+        let corners = CornerMask::MIN_X_MIN_Y | CornerMask::MAX_X_MAX_Y;
+        assert!(corners.contains(CornerMask::MIN_X_MIN_Y));
+        assert!(corners.contains(CornerMask::MAX_X_MAX_Y));
+    }
+
+    #[test]
+    fn layer_action_keys_match_expected_strings() {
+        assert_eq!(LayerActionKeys::ON_ORDER_IN, "onOrderIn");
+        assert_eq!(LayerActionKeys::ON_ORDER_OUT, "onOrderOut");
+        assert_eq!(LayerActionKeys::TRANSITION, "transition");
+    }
+}

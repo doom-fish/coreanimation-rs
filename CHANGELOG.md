@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.2] - 2026-05-20
+
+- Added in-`src/` unit tests across animation, ca_frame_rate_range, error, layer, and transform (Tier 2 quality polish), providing fast `cargo test --lib` fail-fast signal alongside the existing integration tests under `tests/`.
+
 ## [0.5.1] - 2026-05-18
 
 - Added one-line rustdoc coverage across the core layer, animation, display-link, emitter, renderer, transaction, constraint, path, and transform surfaces, lifting measured public-item coverage above 80%.

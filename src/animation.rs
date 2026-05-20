@@ -635,3 +635,43 @@ fn take_c_string(ptr: *mut libc::c_char) -> Option<String> {
     unsafe { libc::free(ptr.cast()) };
     Some(value)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        AnimationCalculationMode, RotationMode, TransitionSubtype, TransitionType,
+    };
+
+    #[test]
+    fn animation_calculation_mode_from_raw_covers_all_variants() {
+        assert_eq!(AnimationCalculationMode::from_raw(-1), AnimationCalculationMode::Linear);
+        assert_eq!(AnimationCalculationMode::from_raw(1), AnimationCalculationMode::Discrete);
+        assert_eq!(AnimationCalculationMode::from_raw(2), AnimationCalculationMode::Paced);
+        assert_eq!(AnimationCalculationMode::from_raw(3), AnimationCalculationMode::Cubic);
+        assert_eq!(AnimationCalculationMode::from_raw(4), AnimationCalculationMode::CubicPaced);
+    }
+
+    #[test]
+    fn rotation_mode_from_raw_covers_all_variants() {
+        assert_eq!(RotationMode::from_raw(-1), RotationMode::None);
+        assert_eq!(RotationMode::from_raw(1), RotationMode::Auto);
+        assert_eq!(RotationMode::from_raw(2), RotationMode::AutoReverse);
+    }
+
+    #[test]
+    fn transition_type_from_raw_covers_all_variants() {
+        assert_eq!(TransitionType::from_raw(-1), TransitionType::Fade);
+        assert_eq!(TransitionType::from_raw(1), TransitionType::MoveIn);
+        assert_eq!(TransitionType::from_raw(2), TransitionType::Push);
+        assert_eq!(TransitionType::from_raw(3), TransitionType::Reveal);
+    }
+
+    #[test]
+    fn transition_subtype_from_raw_covers_all_variants() {
+        assert_eq!(TransitionSubtype::from_raw(-1), TransitionSubtype::None);
+        assert_eq!(TransitionSubtype::from_raw(1), TransitionSubtype::FromRight);
+        assert_eq!(TransitionSubtype::from_raw(2), TransitionSubtype::FromLeft);
+        assert_eq!(TransitionSubtype::from_raw(3), TransitionSubtype::FromTop);
+        assert_eq!(TransitionSubtype::from_raw(4), TransitionSubtype::FromBottom);
+    }
+}

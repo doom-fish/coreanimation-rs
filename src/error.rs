@@ -22,3 +22,25 @@ impl fmt::Display for CoreAnimationError {
 }
 
 impl Error for CoreAnimationError {}
+
+#[cfg(test)]
+mod tests {
+    use super::CoreAnimationError;
+
+    #[test]
+    fn new_and_display_round_trip_message() {
+        let error = CoreAnimationError::new("layer failure");
+
+        assert_eq!(error.to_string(), "layer failure");
+    }
+
+    #[test]
+    fn cloned_errors_preserve_message_and_have_no_source() {
+        let error = CoreAnimationError::new("animation failure");
+        let cloned = error.clone();
+        let as_std_error: &dyn std::error::Error = &cloned;
+
+        assert_eq!(cloned, error);
+        assert!(as_std_error.source().is_none());
+    }
+}
