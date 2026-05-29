@@ -160,6 +160,27 @@ func caReadFrameRateRange(_ raw: UnsafeRawPointer?) -> CAFrameRateRange? {
     return CAFrameRateRange(minimum: ptr[0], maximum: ptr[1], preferred: ptr[2])
 }
 
+/// Cross-language ABI check called from Rust's `tests/ffi_layout_tests.rs`.
+///
+/// Returns `true` only if the Swift `MemoryLayout` (size, stride and alignment)
+/// of `CATransform3D` and `CAFrameRateRange` matches the values pinned on the
+/// Rust side via the `const _: () = assert!(...)` checks in `src/transform.rs`
+/// and `src/ca_frame_rate_range.rs`. If the layouts ever drift apart this
+/// returns `false` and the Rust test fails, flagging a real ABI mismatch.
+@_cdecl("ca_verify_ffi_layout")
+public func ca_verify_ffi_layout() -> Bool {
+    var ok = MemoryLayout<CATransform3D>.size == 128
+        && MemoryLayout<CATransform3D>.stride == 128
+        && MemoryLayout<CATransform3D>.alignment == 8
+    if #available(macOS 12.0, *) {
+        ok = ok
+            && MemoryLayout<CAFrameRateRange>.size == 12
+            && MemoryLayout<CAFrameRateRange>.stride == 12
+            && MemoryLayout<CAFrameRateRange>.alignment == 4
+    }
+    return ok
+}
+
 func caContentsFormat(_ raw: Int32) -> CALayerContentsFormat {
     switch raw {
     case 1: return .RGBA16Float

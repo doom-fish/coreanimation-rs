@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::ca_frame_rate_range::FrameRateRange;
 use crate::layer::{LayerLike, MetalDrawable, MetalLayer};
@@ -6,8 +7,70 @@ use crate::private::handle_type;
 
 handle_type!(MetalDisplayLinkUpdate);
 
+// Reference-counted delegate context shared between Rust (the owning
+// `MetalDisplayLink`) and the Swift `CAMetalDisplayLinkDelegate` wrapper.
+//
+// The Swift wrapper takes a +1 reference (via `context_retain_cb`) for the
+// duration of its own lifetime and drops it in `deinit` (via
+// `context_release_cb`). This guarantees the boxed Rust closure outlives any
+// in-flight `metalDisplayLink(_:needsUpdate:)` callback even if Rust clears the
+// delegate or drops the display link concurrently. The box is freed only once
+// both sides have released their reference.
 struct MetalDisplayLinkDelegateContext {
     callback: Box<dyn FnMut(MetalDisplayLinkUpdate)>,
+    ref_count: AtomicUsize,
+}
+
+impl MetalDisplayLinkDelegateContext {
+    fn new(callback: Box<dyn FnMut(MetalDisplayLinkUpdate)>) -> *mut Self {
+        Box::into_raw(Box::new(Self {
+            callback,
+            ref_count: AtomicUsize::new(1),
+        }))
+    }
+
+    /// Increment the reference count.
+    ///
+    /// # Safety
+    ///
+    /// `ptr` must be null or point to a valid, live context.
+    unsafe fn retain(ptr: *mut Self) {
+        if ptr.is_null() {
+            return;
+        }
+        unsafe { &*ptr }.ref_count.fetch_add(1, Ordering::Relaxed);
+    }
+
+    /// Decrement the reference count, freeing the context if it reaches zero.
+    ///
+    /// # Safety
+    ///
+    /// `ptr` must be null or point to a valid, live context. After this call
+    /// `ptr` must not be used if the context was freed.
+    unsafe fn release(ptr: *mut Self) {
+        if ptr.is_null() {
+            return;
+        }
+        let prev = unsafe { &*ptr }.ref_count.fetch_sub(1, Ordering::Release);
+        if prev == 1 {
+            // Acquire fence pairs with the Release stores from other threads'
+            // `fetch_sub` calls; this is the canonical Arc-style refcount drop.
+            core::sync::atomic::fence(Ordering::Acquire);
+            drop(unsafe { Box::from_raw(ptr) });
+        }
+    }
+}
+
+// C trampoline handed to Swift so the delegate wrapper can take a +1 reference
+// on the context for the duration of its own lifetime.
+extern "C" fn context_retain_cb(context: *mut c_void) {
+    unsafe { MetalDisplayLinkDelegateContext::retain(context.cast()) };
+}
+
+// C trampoline handed to Swift, invoked from the delegate wrapper's `deinit` to
+// drop the +1 reference taken in `context_retain_cb`.
+extern "C" fn context_release_cb(context: *mut c_void) {
+    unsafe { MetalDisplayLinkDelegateContext::release(context.cast()) };
 }
 
 /// Safe wrapper around `CAMetalDisplayLink`. See <https://developer.apple.com/documentation/quartzcore/cametaldisplaylink>.
@@ -112,14 +175,14 @@ impl MetalDisplayLink {
         F: FnMut(MetalDisplayLinkUpdate) + 'static,
     {
         self.clear_delegate();
-        let context = Box::into_raw(Box::new(MetalDisplayLinkDelegateContext {
-            callback: Box::new(callback),
-        }));
+        let context = MetalDisplayLinkDelegateContext::new(Box::new(callback));
         unsafe {
             crate::ffi::ca_metal_display_link_set_delegate(
                 self.ptr,
                 Some(metal_display_link_delegate_trampoline),
                 context.cast(),
+                context_retain_cb,
+                context_release_cb,
             )
         };
         self.delegate_context = Some(context);
@@ -128,10 +191,16 @@ impl MetalDisplayLink {
     /// Clears the Metal display-link callback.
     pub fn clear_delegate(&mut self) {
         unsafe {
-            crate::ffi::ca_metal_display_link_set_delegate(self.ptr, None, core::ptr::null_mut())
+            crate::ffi::ca_metal_display_link_set_delegate(
+                self.ptr,
+                None,
+                core::ptr::null_mut(),
+                context_retain_cb,
+                context_release_cb,
+            )
         };
         if let Some(context) = self.delegate_context.take() {
-            unsafe { drop(Box::from_raw(context)) };
+            unsafe { MetalDisplayLinkDelegateContext::release(context) };
         }
     }
 
@@ -195,5 +264,7 @@ unsafe extern "C" fn metal_display_link_delegate_trampoline(
 
     let context = unsafe { &mut *context.cast::<MetalDisplayLinkDelegateContext>() };
     let update = unsafe { MetalDisplayLinkUpdate::from_raw_unchecked(update_handle) };
-    (context.callback)(update);
+    doom_fish_utils::panic_safe::catch_user_panic("MetalDisplayLink delegate callback", || {
+        (context.callback)(update);
+    });
 }

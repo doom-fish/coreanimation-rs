@@ -1,4 +1,0 @@
-module CoreAnimationBridge [system] {
-    header "CoreAnimationBridge.h"
-    export *
-}

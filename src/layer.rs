@@ -496,7 +496,9 @@ unsafe extern "C" fn layer_delegate_display_trampoline(
 
     let context = unsafe { &mut *context.cast::<LayerDisplayContext>() };
     let layer = unsafe { Layer::from_raw_unchecked(layer_handle) };
-    (context.callback)(layer);
+    doom_fish_utils::panic_safe::catch_user_panic("LayerDelegate display callback", || {
+        (context.callback)(layer);
+    });
 }
 
 unsafe extern "C" fn layer_delegate_layout_trampoline(
@@ -509,7 +511,9 @@ unsafe extern "C" fn layer_delegate_layout_trampoline(
 
     let context = unsafe { &mut *context.cast::<LayerLayoutContext>() };
     let layer = unsafe { Layer::from_raw_unchecked(layer_handle) };
-    (context.callback)(layer);
+    doom_fish_utils::panic_safe::catch_user_panic("LayerDelegate layout callback", || {
+        (context.callback)(layer);
+    });
 }
 
 unsafe extern "C" fn layer_delegate_action_trampoline(
@@ -528,7 +532,11 @@ unsafe extern "C" fn layer_delegate_action_trampoline(
     } else {
         unsafe { CStr::from_ptr(key) }.to_str().unwrap_or_default()
     };
-    (context.callback)(layer, key)
+    let mut result = core::ptr::null_mut();
+    doom_fish_utils::panic_safe::catch_user_panic("LayerDelegate action callback", || {
+        result = (context.callback)(layer, key);
+    });
+    result
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1455,8 +1463,8 @@ fn take_c_string(ptr: *mut libc::c_char) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::{
-        AutoresizingMask, ContentsFilter, ContentsFormat, ContentsGravity, CornerCurve,
-        CornerMask, DynamicRange, EdgeAntialiasingMask, LayerActionKeys, ToneMapMode,
+        AutoresizingMask, ContentsFilter, ContentsFormat, ContentsGravity, CornerCurve, CornerMask,
+        DynamicRange, EdgeAntialiasingMask, LayerActionKeys, ToneMapMode,
     };
 
     #[test]
@@ -1465,7 +1473,10 @@ mod tests {
         assert_eq!(ContentsGravity::from_raw(1), ContentsGravity::Top);
         assert_eq!(ContentsGravity::from_raw(8), ContentsGravity::BottomRight);
         assert_eq!(ContentsGravity::from_raw(10), ContentsGravity::ResizeAspect);
-        assert_eq!(ContentsGravity::from_raw(11), ContentsGravity::ResizeAspectFill);
+        assert_eq!(
+            ContentsGravity::from_raw(11),
+            ContentsGravity::ResizeAspectFill
+        );
         assert_eq!(ContentsGravity::from_raw(-1), ContentsGravity::Resize);
     }
 

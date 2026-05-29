@@ -6,6 +6,13 @@ pub struct FrameRateRange {
     pub preferred: f32,
 }
 
+// ABI layout assertions for `FrameRateRange`, marshalled as 3 contiguous `f32`s
+// across the Rust <-> Swift FFI boundary to mirror `CAFrameRateRange`. The
+// cross-language check lives in `ca_verify_ffi_layout` and is exercised by
+// `tests/ffi_layout_tests.rs`.
+const _: () = assert!(core::mem::size_of::<FrameRateRange>() == 12);
+const _: () = assert!(core::mem::align_of::<FrameRateRange>() == 4);
+
 impl FrameRateRange {
     pub const DEFAULT: Self = Self::new(0.0, 0.0, 0.0);
 

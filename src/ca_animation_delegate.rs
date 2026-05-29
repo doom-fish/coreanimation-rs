@@ -179,7 +179,9 @@ unsafe extern "C" fn animation_delegate_did_start_trampoline(
 
     let context = unsafe { &mut *context.cast::<AnimationDidStartContext>() };
     let animation = unsafe { Animation::from_raw_unchecked(animation_handle) };
-    (context.callback)(animation);
+    doom_fish_utils::panic_safe::catch_user_panic("AnimationDelegate did_start callback", || {
+        (context.callback)(animation)
+    });
 }
 
 unsafe extern "C" fn animation_delegate_did_stop_trampoline(
@@ -193,7 +195,9 @@ unsafe extern "C" fn animation_delegate_did_stop_trampoline(
 
     let context = unsafe { &mut *context.cast::<AnimationDidStopContext>() };
     let animation = unsafe { Animation::from_raw_unchecked(animation_handle) };
-    (context.callback)(animation, finished);
+    doom_fish_utils::panic_safe::catch_user_panic("AnimationDelegate did_stop callback", || {
+        (context.callback)(animation, finished)
+    });
 }
 
 #[cfg(test)]

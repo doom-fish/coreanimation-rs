@@ -6,17 +6,30 @@ public typealias CAMetalDisplayLinkUpdateCallback = @convention(c) (
     UnsafeMutableRawPointer?
 ) -> Void
 
+public typealias CAContextRefCallback = @convention(c) (UnsafeMutableRawPointer?) -> Void
+
 @available(macOS 14.0, *)
 final class CAMetalDisplayLinkDelegateBox: NSObject, CAMetalDisplayLinkDelegate {
     let callback: CAMetalDisplayLinkUpdateCallback
     let context: UnsafeMutableRawPointer?
+    let contextRelease: CAContextRefCallback
 
     init(
         callback: @escaping CAMetalDisplayLinkUpdateCallback,
-        context: UnsafeMutableRawPointer?
+        context: UnsafeMutableRawPointer?,
+        contextRetain: CAContextRefCallback,
+        contextRelease: CAContextRefCallback
     ) {
         self.callback = callback
         self.context = context
+        self.contextRelease = contextRelease
+        // Take a +1 on the Rust context for the lifetime of this object so an
+        // in-flight update callback can never observe a freed context.
+        contextRetain(context)
+    }
+
+    deinit {
+        contextRelease(context)
     }
 
     func metalDisplayLink(_ link: CAMetalDisplayLink, needsUpdate update: CAMetalDisplayLink.Update) {
@@ -124,7 +137,9 @@ public func ca_metal_display_link_set_preferred_frame_rate_range(_ handle: Unsaf
 public func ca_metal_display_link_set_delegate(
     _ handle: UnsafeMutableRawPointer?,
     _ callback: CAMetalDisplayLinkUpdateCallback?,
-    _ context: UnsafeMutableRawPointer?
+    _ context: UnsafeMutableRawPointer?,
+    _ contextRetain: CAContextRefCallback,
+    _ contextRelease: CAContextRefCallback
 ) {
     guard #available(macOS 14.0, *), let box = caBorrowMetalDisplayLinkBox(handle) else { return }
     guard let callback else {
@@ -132,7 +147,12 @@ public func ca_metal_display_link_set_delegate(
         box.link.delegate = nil
         return
     }
-    let delegate = CAMetalDisplayLinkDelegateBox(callback: callback, context: context)
+    let delegate = CAMetalDisplayLinkDelegateBox(
+        callback: callback,
+        context: context,
+        contextRetain: contextRetain,
+        contextRelease: contextRelease
+    )
     box.delegateBox = delegate
     box.link.delegate = delegate
 }

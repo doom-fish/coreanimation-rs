@@ -43,6 +43,15 @@ unsafe extern "C" {
     pub fn ca_release(handle: *mut c_void);
     pub fn CACurrentMediaTime() -> f64;
 
+    /// Cross-language ABI check implemented in the Swift bridge.
+    ///
+    /// Returns `true` only if the Swift `MemoryLayout` (size, stride and
+    /// alignment) of `CATransform3D` and `CAFrameRateRange` matches the values
+    /// pinned on the Rust side for [`crate::transform::Transform3D`] and
+    /// [`crate::ca_frame_rate_range::FrameRateRange`]. Verified by
+    /// `tests/ffi_layout_tests.rs`.
+    pub fn ca_verify_ffi_layout() -> bool;
+
     pub fn ca_color_new_rgba(red: f64, green: f64, blue: f64, alpha: f64) -> *mut c_void;
     pub fn ca_color_get_components(handle: *mut c_void, out_components: *mut c_void) -> bool;
 
@@ -558,6 +567,8 @@ unsafe extern "C" {
         handle: *mut c_void,
         callback: MetalDisplayLinkUpdateCallback,
         context: *mut c_void,
+        context_retain: extern "C" fn(*mut c_void),
+        context_release: extern "C" fn(*mut c_void),
     );
     pub fn ca_metal_display_link_update_get_drawable(handle: *mut c_void) -> *mut c_void;
     pub fn ca_metal_display_link_update_get_target_timestamp(handle: *mut c_void) -> f64;

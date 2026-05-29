@@ -1,5 +1,13 @@
 use apple_cf::cg::CGAffineTransform;
 
+// ABI layout assertions for `Transform3D`, passed by value across the
+// Rust <-> Swift FFI boundary (and marshalled as 16 contiguous `f64`s). Any
+// drift from the system `CATransform3D` layout silently corrupts transforms.
+// The cross-language check lives in `ca_verify_ffi_layout` / the
+// `tests/ffi_layout_tests.rs` harness.
+const _: () = assert!(core::mem::size_of::<Transform3D>() == 128);
+const _: () = assert!(core::mem::align_of::<Transform3D>() == 8);
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 /// Safe wrapper around `CATransform3D`. See <https://developer.apple.com/documentation/quartzcore/catransform3d>.
