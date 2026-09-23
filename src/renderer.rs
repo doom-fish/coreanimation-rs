@@ -86,6 +86,18 @@ impl Renderer {
         };
     }
 
+    pub fn add_update_rect(&self, rect: CGRect) {
+        unsafe {
+            crate::ffi::ca_renderer_add_update_rect(
+                self.as_ptr(),
+                rect.origin.x,
+                rect.origin.y,
+                rect.size.width,
+                rect.size.height,
+            )
+        };
+    }
+
     #[must_use]
     /// Returns the bounds updated by the current renderer frame.
     pub fn update_bounds(&self) -> CGRect {

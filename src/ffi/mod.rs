@@ -282,6 +282,16 @@ unsafe extern "C" {
     pub fn ca_spring_animation_get_initial_velocity(handle: *mut c_void) -> f64;
     pub fn ca_spring_animation_set_initial_velocity(handle: *mut c_void, value: f64);
     pub fn ca_spring_animation_get_settling_duration(handle: *mut c_void) -> f64;
+    pub fn ca_spring_animation_new_perceptual(
+        key_path: *const c_char,
+        perceptual_duration: f64,
+        bounce: f64,
+    ) -> *mut c_void;
+    pub fn ca_spring_animation_supports_perceptual_parameters() -> bool;
+    pub fn ca_spring_animation_get_perceptual_duration(handle: *mut c_void) -> f64;
+    pub fn ca_spring_animation_get_bounce(handle: *mut c_void) -> f64;
+    pub fn ca_spring_animation_get_allows_overdamping(handle: *mut c_void) -> bool;
+    pub fn ca_spring_animation_set_allows_overdamping(handle: *mut c_void, value: bool) -> bool;
 
     pub fn ca_animation_group_new() -> *mut c_void;
     pub fn ca_animation_group_set_animations(
@@ -312,6 +322,13 @@ unsafe extern "C" {
     pub fn ca_renderer_get_bounds(handle: *mut c_void, out_rect: *mut c_void) -> bool;
     pub fn ca_renderer_set_bounds(handle: *mut c_void, x: f64, y: f64, width: f64, height: f64);
     pub fn ca_renderer_begin_frame(handle: *mut c_void, time: f64, timestamp: *mut c_void);
+    pub fn ca_renderer_add_update_rect(
+        handle: *mut c_void,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    );
     pub fn ca_renderer_update_bounds(handle: *mut c_void, out_rect: *mut c_void) -> bool;
     pub fn ca_renderer_render(handle: *mut c_void);
     pub fn ca_renderer_end_frame(handle: *mut c_void);
@@ -534,6 +551,8 @@ unsafe extern "C" {
         initial_velocity: f64,
     );
     pub fn ca_transition_has_subtype(handle: *mut c_void) -> bool;
+    pub fn ca_transition_copy_filter_name(handle: *mut c_void) -> *mut c_char;
+    pub fn ca_transition_set_filter_name(handle: *mut c_void, name: *const c_char) -> bool;
     pub fn ca_transition_clear_subtype(handle: *mut c_void);
 
     pub fn ca_transaction_lock();
@@ -596,6 +615,24 @@ unsafe extern "C" {
     pub fn ca_metal_layer_get_colorspace(handle: *mut c_void) -> *mut c_void;
     pub fn ca_metal_layer_set_colorspace(handle: *mut c_void, value_handle: *mut c_void);
     pub fn ca_metal_layer_get_edr_metadata(handle: *mut c_void) -> *mut c_void;
+    pub fn ca_metal_layer_get_wants_extended_dynamic_range_content(handle: *mut c_void) -> bool;
+    pub fn ca_metal_layer_set_wants_extended_dynamic_range_content(
+        handle: *mut c_void,
+        value: bool,
+    );
+    pub fn ca_metal_layer_get_preferred_device_registry_id(handle: *mut c_void) -> u64;
+    pub fn ca_metal_layer_supports_developer_hud_properties() -> bool;
+    pub fn ca_metal_layer_copy_developer_hud_properties(
+        handle: *mut c_void,
+        out_count: *mut usize,
+    ) -> *mut *mut c_char;
+    pub fn ca_metal_layer_set_developer_hud_properties(
+        handle: *mut c_void,
+        keys: *const *const c_char,
+        values: *const *const c_char,
+        count: usize,
+        present: bool,
+    ) -> bool;
     pub fn ca_metal_layer_set_edr_metadata(handle: *mut c_void, value_handle: *mut c_void);
     pub fn ca_edr_metadata_is_available() -> bool;
     pub fn ca_edr_metadata_new_hdr10_with_display_info(

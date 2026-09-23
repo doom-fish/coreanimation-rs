@@ -59,6 +59,12 @@ public func ca_renderer_begin_frame(_ handle: UnsafeMutableRawPointer?, _ time: 
     }
 }
 
+@_cdecl("ca_renderer_add_update_rect")
+public func ca_renderer_add_update_rect(_ handle: UnsafeMutableRawPointer?, _ x: Double, _ y: Double, _ width: Double, _ height: Double) {
+    guard let renderer: CARenderer = caBorrow(handle) else { return }
+    renderer.addUpdate(CGRect(x: x, y: y, width: width, height: height))
+}
+
 @_cdecl("ca_renderer_update_bounds")
 public func ca_renderer_update_bounds(_ handle: UnsafeMutableRawPointer?, _ outRect: UnsafeMutableRawPointer?) -> Bool {
     guard let renderer: CARenderer = caBorrow(handle) else { return false }

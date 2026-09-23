@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use apple_metal::MetalDevice;
 use coreanimation::MetalLayer;
 
@@ -41,4 +43,71 @@ fn maximum_drawable_count_accepts_only_two_or_three() {
         .set_maximum_drawable_count(3)
         .expect("drawable count 3");
     assert_eq!(layer.maximum_drawable_count(), 3);
+}
+
+#[test]
+fn extended_dynamic_range_flag_round_trips() {
+    let layer = MetalLayer::new().expect("layer");
+    assert!(!layer.wants_extended_dynamic_range_content());
+
+    layer.set_wants_extended_dynamic_range_content(true);
+    assert!(layer.wants_extended_dynamic_range_content());
+    layer.set_wants_extended_dynamic_range_content(false);
+    assert!(!layer.wants_extended_dynamic_range_content());
+}
+
+#[test]
+fn preferred_device_is_an_owned_metal_device() {
+    let layer = MetalLayer::new().expect("layer");
+    let devices = apple_metal::copy_all_devices();
+    let Some(preferred) = layer.preferred_device() else {
+        assert!(
+            devices.is_empty(),
+            "no preferred device with {} GPUs",
+            devices.len()
+        );
+        return;
+    };
+
+    assert!(devices
+        .iter()
+        .any(|device| device.registry_id() == preferred.registry_id()));
+    if devices.len() == 1 {
+        let default = MetalDevice::system_default().expect("default device");
+        assert_eq!(preferred.registry_id(), default.registry_id());
+    }
+    assert!(!preferred.name().is_empty());
+}
+
+#[test]
+fn developer_hud_properties_round_trip() {
+    let layer = MetalLayer::new().expect("layer");
+    if !MetalLayer::supports_developer_hud_properties() {
+        assert!(layer.set_developer_hud_properties(None).is_err());
+        assert_eq!(layer.developer_hud_properties(), None);
+        return;
+    }
+    assert_eq!(layer.developer_hud_properties(), None);
+
+    let properties = BTreeMap::from([
+        ("mode".to_owned(), "disabled".to_owned()),
+        ("doomfish.test".to_owned(), "1".to_owned()),
+    ]);
+    layer
+        .set_developer_hud_properties(Some(&properties))
+        .expect("set properties");
+    assert_eq!(layer.developer_hud_properties(), Some(properties.clone()));
+
+    let with_nul = BTreeMap::from([("mo\0de".to_owned(), "disabled".to_owned())]);
+    assert!(layer.set_developer_hud_properties(Some(&with_nul)).is_err());
+    assert_eq!(layer.developer_hud_properties(), Some(properties));
+
+    layer
+        .set_developer_hud_properties(Some(&BTreeMap::new()))
+        .expect("empty properties");
+    assert_eq!(layer.developer_hud_properties(), Some(BTreeMap::new()));
+    layer
+        .set_developer_hud_properties(None)
+        .expect("clear properties");
+    assert_eq!(layer.developer_hud_properties(), None);
 }

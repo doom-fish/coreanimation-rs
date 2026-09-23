@@ -1,4 +1,8 @@
+use std::collections::BTreeMap;
+use std::ffi::{CStr, CString};
+
 use apple_cf::cg::CGColorSpace;
+use apple_metal::MetalDevice;
 
 use crate::ca_edr_metadata::EDRMetadata;
 use crate::error::CoreAnimationError;
@@ -117,5 +121,121 @@ impl MetalLayer {
                 value.map_or(core::ptr::null_mut(), EDRMetadata::as_ptr),
             )
         };
+    }
+
+    #[must_use]
+    pub fn wants_extended_dynamic_range_content(&self) -> bool {
+        unsafe {
+            crate::ffi::ca_metal_layer_get_wants_extended_dynamic_range_content(self.as_layer_ptr())
+        }
+    }
+
+    pub fn set_wants_extended_dynamic_range_content(&self, value: bool) {
+        unsafe {
+            crate::ffi::ca_metal_layer_set_wants_extended_dynamic_range_content(
+                self.as_layer_ptr(),
+                value,
+            )
+        };
+    }
+
+    #[must_use]
+    pub fn preferred_device(&self) -> Option<MetalDevice> {
+        let registry_id = unsafe {
+            crate::ffi::ca_metal_layer_get_preferred_device_registry_id(self.as_layer_ptr())
+        };
+        if registry_id == 0 {
+            return None;
+        }
+        apple_metal::copy_all_devices()
+            .into_iter()
+            .find(|device| device.registry_id() == registry_id)
+    }
+
+    #[must_use]
+    pub fn supports_developer_hud_properties() -> bool {
+        unsafe { crate::ffi::ca_metal_layer_supports_developer_hud_properties() }
+    }
+
+    #[must_use]
+    pub fn developer_hud_properties(&self) -> Option<BTreeMap<String, String>> {
+        let mut count = 0_usize;
+        let entries = unsafe {
+            crate::ffi::ca_metal_layer_copy_developer_hud_properties(
+                self.as_layer_ptr(),
+                &raw mut count,
+            )
+        };
+        if entries.is_null() {
+            return None;
+        }
+        let strings: Vec<Option<String>> = (0..count.saturating_mul(2))
+            .map(|index| unsafe {
+                let string = *entries.add(index);
+                if string.is_null() {
+                    return None;
+                }
+                let owned = CStr::from_ptr(string).to_string_lossy().into_owned();
+                libc::free(string.cast());
+                Some(owned)
+            })
+            .collect();
+        unsafe { libc::free(entries.cast()) };
+        Some(
+            strings
+                .chunks_exact(2)
+                .filter_map(|pair| Some((pair[0].clone()?, pair[1].clone()?)))
+                .collect(),
+        )
+    }
+
+    pub fn set_developer_hud_properties(
+        &self,
+        properties: Option<&BTreeMap<String, String>>,
+    ) -> Result<(), CoreAnimationError> {
+        if !Self::supports_developer_hud_properties() {
+            return Err(CoreAnimationError::new(
+                "CAMetalLayer.developerHUDProperties requires macOS 13.0 or later",
+            ));
+        }
+        let entries = properties
+            .map(|properties| {
+                properties
+                    .iter()
+                    .map(|(key, value)| {
+                        Ok((CString::new(key.as_str())?, CString::new(value.as_str())?))
+                    })
+                    .collect::<Result<Vec<_>, std::ffi::NulError>>()
+            })
+            .transpose()
+            .map_err(|_| {
+                CoreAnimationError::new("developer HUD property keys and values cannot contain NUL")
+            })?;
+        let keys: Vec<*const libc::c_char> = entries
+            .iter()
+            .flatten()
+            .map(|(key, _)| key.as_ptr())
+            .collect();
+        let values: Vec<*const libc::c_char> = entries
+            .iter()
+            .flatten()
+            .map(|(_, value)| value.as_ptr())
+            .collect();
+        let accepted = unsafe {
+            crate::ffi::ca_metal_layer_set_developer_hud_properties(
+                self.as_layer_ptr(),
+                keys.as_ptr(),
+                values.as_ptr(),
+                keys.len(),
+                entries.is_some(),
+            )
+        };
+        if accepted {
+            Ok(())
+        } else {
+            Err(CoreAnimationError::new(
+                "CAMetalLayer rejected the developer HUD properties",
+            ))
+        }
     }
 }

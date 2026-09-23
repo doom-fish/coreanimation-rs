@@ -22,7 +22,7 @@ macro_rules! animation_wrapper {
         #[derive(Debug, Clone)]
         /// Safe wrapper around the corresponding `Core Animation` animation type.
         pub struct $name {
-            inner: Animation,
+            pub(crate) inner: Animation,
         }
 
         impl Deref for $name {
