@@ -24,6 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             mipmapped: false,
             usage: texture_usage::RENDER_TARGET | texture_usage::SHADER_READ,
             storage_mode: storage_mode::SHARED,
+            ..TextureDescriptor::new_2d(100, 100, pixel_format::BGRA8UNORM)
         })
         .expect("texture");
 
@@ -37,8 +38,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     renderer.render_at_time(0.0);
 
     let marker = queue.new_command_buffer().expect("marker");
-    marker.commit();
-    marker.wait_until_completed();
+    marker.commit()?;
+    marker.wait_until_completed()?;
 
     Transaction::flush();
     let pixels = read_texture_bytes(&texture)?;

@@ -20,6 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             mipmapped: false,
             usage: texture_usage::RENDER_TARGET | texture_usage::SHADER_READ,
             storage_mode: storage_mode::SHARED,
+            ..TextureDescriptor::new_2d(WIDTH, HEIGHT, pixel_format::BGRA8UNORM)
         })
         .ok_or("failed to allocate render target texture")?;
 
@@ -35,8 +36,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let marker = queue
         .new_command_buffer()
         .ok_or("failed to create sync command buffer")?;
-    marker.commit();
-    marker.wait_until_completed();
+    marker.commit()?;
+    marker.wait_until_completed()?;
 
     let pixels = read_texture_bytes(&texture)?;
     assert!(

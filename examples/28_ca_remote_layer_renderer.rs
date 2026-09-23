@@ -35,6 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             mipmapped: false,
             usage: texture_usage::RENDER_TARGET | texture_usage::SHADER_READ,
             storage_mode: storage_mode::SHARED,
+            ..TextureDescriptor::new_2d(WIDTH, HEIGHT, pixel_format::BGRA8UNORM)
         })
         .ok_or("failed to allocate texture")?;
     let color_space = CGColorSpace::display_p3();
@@ -47,8 +48,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let marker = queue
         .new_command_buffer()
         .ok_or("failed to create marker command buffer")?;
-    marker.commit();
-    marker.wait_until_completed();
+    marker.commit()?;
+    marker.wait_until_completed()?;
 
     let pixels = read_texture_bytes(&texture)?;
     assert!(pixels.iter().any(|&byte| byte != 0));

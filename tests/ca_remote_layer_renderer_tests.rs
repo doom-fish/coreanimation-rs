@@ -39,6 +39,7 @@ fn caremotelayer_and_carenderer_color_space_round_trip() {
             mipmapped: false,
             usage: texture_usage::RENDER_TARGET | texture_usage::SHADER_READ,
             storage_mode: storage_mode::SHARED,
+            ..TextureDescriptor::new_2d(WIDTH, HEIGHT, pixel_format::BGRA8UNORM)
         })
         .expect("texture");
     let color_space = CGColorSpace::display_p3();
@@ -49,8 +50,8 @@ fn caremotelayer_and_carenderer_color_space_round_trip() {
     renderer.render_at_time(0.0);
 
     let marker = queue.new_command_buffer().expect("marker");
-    marker.commit();
-    marker.wait_until_completed();
+    marker.commit().expect("commit marker");
+    marker.wait_until_completed().expect("wait for marker");
 
     let pixels = read_texture_bytes(&texture).expect("pixels");
     assert!(pixels.iter().any(|&byte| byte != 0));
