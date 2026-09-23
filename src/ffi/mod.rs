@@ -321,8 +321,10 @@ unsafe extern "C" {
     pub fn ca_texture_copy_bytes(
         texture_handle: *mut c_void,
         out_bytes: *mut c_void,
+        out_length: usize,
         bytes_per_row: usize,
-    ) -> bool;
+        bytes_per_pixel: usize,
+    ) -> i32;
 
     pub fn ca_transaction_begin();
     pub fn ca_transaction_commit();

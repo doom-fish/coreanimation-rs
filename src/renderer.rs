@@ -1,5 +1,5 @@
 use apple_cf::cg::{CGColorSpace, CGRect};
-use apple_metal::{CommandQueue, MetalTexture};
+use apple_metal::{pixel_format, CommandQueue, MetalTexture};
 
 use crate::display_link::CVTimeStamp;
 use crate::error::CoreAnimationError;
@@ -130,33 +130,53 @@ impl Renderer {
     }
 }
 
-/// Copies 8-bit RGBA or BGRA texel bytes from a Metal texture.
+/// Copies the texel bytes of a CPU-readable 2D Metal texture, `width * bytes_per_pixel` per row.
 pub fn read_texture_bytes(texture: &MetalTexture) -> Result<Vec<u8>, CoreAnimationError> {
-    let width = texture.width();
-    let height = texture.height();
-    let bytes_per_row = width
-        .checked_mul(4)
+    let format = texture.pixel_format();
+    let bytes_per_pixel = match format {
+        pixel_format::DEPTH16UNORM | pixel_format::DEPTH32FLOAT | pixel_format::STENCIL8 => None,
+        format => apple_metal::bytes_per_pixel(format),
+    }
+    .ok_or_else(|| {
+        CoreAnimationError::new(format!(
+            "pixel format {format} has no CPU byte layout (compressed, depth, stencil or unknown)"
+        ))
+    })?;
+    let bytes_per_row = texture
+        .width()
+        .checked_mul(bytes_per_pixel)
         .ok_or_else(|| CoreAnimationError::new("texture bytes_per_row overflowed"))?;
-    let mut bytes = vec![
-        0_u8;
-        bytes_per_row.checked_mul(height).ok_or_else(
-            || CoreAnimationError::new("texture byte count overflowed")
-        )?
-    ];
+    let byte_count = bytes_per_row
+        .checked_mul(texture.height())
+        .filter(|count| isize::try_from(*count).is_ok())
+        .ok_or_else(|| CoreAnimationError::new("texture byte count overflowed"))?;
+    let mut bytes = vec![0_u8; byte_count];
 
-    let ok = unsafe {
+    let status = unsafe {
         crate::ffi::ca_texture_copy_bytes(
             texture.as_ptr(),
             bytes.as_mut_ptr().cast::<core::ffi::c_void>(),
+            bytes.len(),
             bytes_per_row,
+            bytes_per_pixel,
         )
     };
 
-    if ok {
-        Ok(bytes)
-    } else {
-        Err(CoreAnimationError::new(
-            "failed to copy bytes from Metal texture; use an 8-bit RGBA/BGRA texture",
-        ))
+    match status {
+        0 => Ok(bytes),
+        2 => Err(CoreAnimationError::new(format!(
+            "texture type {} is not a plain 2D texture",
+            texture.texture_type()
+        ))),
+        3 => Err(CoreAnimationError::new(format!(
+            "texture storage mode {} is not CPU-accessible; blit it to a shared texture first",
+            texture.storage_mode()
+        ))),
+        4 => Err(CoreAnimationError::new(
+            "framebuffer-only textures cannot be read; disable framebuffer_only on the layer",
+        )),
+        _ => Err(CoreAnimationError::new(
+            "failed to copy bytes from Metal texture",
+        )),
     }
 }

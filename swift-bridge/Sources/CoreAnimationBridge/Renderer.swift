@@ -99,9 +99,21 @@ public func ca_renderer_render_at_time(_ handle: UnsafeMutableRawPointer?, _ tim
 }
 
 @_cdecl("ca_texture_copy_bytes")
-public func ca_texture_copy_bytes(_ textureHandle: UnsafeMutableRawPointer?, _ outBytes: UnsafeMutableRawPointer?, _ bytesPerRow: Int) -> Bool {
-    guard let texture: MTLTexture = caBorrow(textureHandle), let outBytes else { return false }
+public func ca_texture_copy_bytes(
+    _ textureHandle: UnsafeMutableRawPointer?,
+    _ outBytes: UnsafeMutableRawPointer?,
+    _ outLength: Int,
+    _ bytesPerRow: Int,
+    _ bytesPerPixel: Int
+) -> Int32 {
+    guard let texture: MTLTexture = caBorrow(textureHandle), let outBytes, bytesPerPixel > 0 else { return 1 }
+    guard texture.textureType == .type2D else { return 2 }
+    guard texture.storageMode == .shared || texture.storageMode == .managed else { return 3 }
+    guard !texture.isFramebufferOnly else { return 4 }
+    let (rowBytes, rowOverflow) = texture.width.multipliedReportingOverflow(by: bytesPerPixel)
+    let (byteCount, countOverflow) = bytesPerRow.multipliedReportingOverflow(by: texture.height)
+    guard !rowOverflow, !countOverflow, bytesPerRow >= rowBytes, byteCount <= outLength else { return 5 }
     let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
     texture.getBytes(outBytes, bytesPerRow: bytesPerRow, from: region, mipmapLevel: 0)
-    return true
+    return 0
 }
