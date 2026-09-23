@@ -15,9 +15,11 @@ use crate::transform::Transform3D;
 handle_type!(Layer);
 
 /// Trait for wrappers that can yield a `CALayer` handle.
-pub trait LayerLike {
+pub trait LayerLike: crate::private::Sealed {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void;
 }
+
+impl crate::private::Sealed for Layer {}
 
 impl LayerLike for Layer {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void {
@@ -48,6 +50,8 @@ macro_rules! layer_wrapper {
                 &self.inner
             }
         }
+
+        impl crate::private::Sealed for $name {}
 
         impl LayerLike for $name {
             fn as_layer_ptr(&self) -> *mut core::ffi::c_void {

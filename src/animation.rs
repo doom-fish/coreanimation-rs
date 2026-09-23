@@ -7,9 +7,11 @@ use crate::private::{cstring_from_str, handle_type};
 handle_type!(Animation);
 
 /// Trait for wrappers that can yield a `CAAnimation` handle.
-pub trait AnimationLike {
+pub trait AnimationLike: crate::private::Sealed {
     fn as_animation_ptr(&self) -> *mut core::ffi::c_void;
 }
+
+impl crate::private::Sealed for Animation {}
 
 impl AnimationLike for Animation {
     fn as_animation_ptr(&self) -> *mut core::ffi::c_void {
@@ -32,6 +34,8 @@ macro_rules! animation_wrapper {
                 &self.inner
             }
         }
+
+        impl crate::private::Sealed for $name {}
 
         impl AnimationLike for $name {
             fn as_animation_ptr(&self) -> *mut core::ffi::c_void {
@@ -260,6 +264,8 @@ impl Deref for PropertyAnimation {
         &self.inner
     }
 }
+
+impl crate::private::Sealed for PropertyAnimation {}
 
 impl AnimationLike for PropertyAnimation {
     fn as_animation_ptr(&self) -> *mut core::ffi::c_void {
@@ -549,6 +555,8 @@ impl Deref for AnimationGroup {
     }
 }
 
+impl crate::private::Sealed for AnimationGroup {}
+
 impl AnimationLike for AnimationGroup {
     fn as_animation_ptr(&self) -> *mut core::ffi::c_void {
         self.inner.as_ptr()
@@ -618,6 +626,8 @@ impl Deref for Transition {
         &self.inner
     }
 }
+
+impl crate::private::Sealed for Transition {}
 
 impl AnimationLike for Transition {
     fn as_animation_ptr(&self) -> *mut core::ffi::c_void {

@@ -64,6 +64,8 @@ impl Deref for TiledLayer {
     }
 }
 
+impl crate::private::Sealed for TiledLayer {}
+
 impl LayerLike for TiledLayer {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void {
         self.inner.as_ptr()

@@ -22,6 +22,8 @@ impl Deref for TransformLayer {
     }
 }
 
+impl crate::private::Sealed for TransformLayer {}
+
 impl LayerLike for TransformLayer {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void {
         self.inner.as_ptr()

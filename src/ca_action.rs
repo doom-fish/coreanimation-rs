@@ -6,9 +6,11 @@ use crate::private::{cstring_from_str, handle_type};
 
 handle_type!(Action);
 
-pub trait ActionLike {
+pub trait ActionLike: crate::private::Sealed {
     fn as_action_ptr(&self) -> *mut c_void;
 }
+
+impl crate::private::Sealed for Action {}
 
 impl ActionLike for Action {
     fn as_action_ptr(&self) -> *mut c_void {

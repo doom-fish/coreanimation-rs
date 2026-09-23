@@ -89,6 +89,8 @@ impl Deref for ScrollLayer {
     }
 }
 
+impl crate::private::Sealed for ScrollLayer {}
+
 impl LayerLike for ScrollLayer {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void {
         self.inner.as_ptr()

@@ -261,6 +261,8 @@ impl Deref for EmitterLayer {
     }
 }
 
+impl crate::private::Sealed for EmitterLayer {}
+
 impl LayerLike for EmitterLayer {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void {
         self.inner.as_ptr()

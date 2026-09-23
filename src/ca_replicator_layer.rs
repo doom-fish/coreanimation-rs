@@ -163,6 +163,8 @@ impl Deref for ReplicatorLayer {
     }
 }
 
+impl crate::private::Sealed for ReplicatorLayer {}
+
 impl LayerLike for ReplicatorLayer {
     fn as_layer_ptr(&self) -> *mut core::ffi::c_void {
         self.inner.as_ptr()

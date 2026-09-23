@@ -48,7 +48,8 @@ final class CALayerDelegateBox: NSObject, CALayerDelegate {
         let handle = event.withCString { cString in
             actionCallback(actionContext, caRetain(layer), cString)
         }
-        guard let handle, let action = caBorrowActionObject(handle) as? CAAction else { return nil }
+        guard let handle else { return nil }
+        let action = caBorrowActionObject(handle) as? CAAction
         caReleaseHandle(handle)
         return action
     }

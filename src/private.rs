@@ -65,6 +65,8 @@ macro_rules! handle_type {
 
 pub(crate) use handle_type;
 
+pub trait Sealed {}
+
 /// Converts a Rust string into a `CString` when it contains no interior NUL bytes.
 pub fn cstring_from_str(value: &str) -> Option<CString> {
     CString::new(value).ok()

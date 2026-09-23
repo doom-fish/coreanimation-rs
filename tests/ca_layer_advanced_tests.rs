@@ -111,3 +111,29 @@ fn calayer_advanced_surface_round_trip() {
         .action_handle_for_key(LayerActionKeys::ON_ORDER_OUT)
         .is_none());
 }
+
+#[test]
+fn delegate_action_provider_results_reach_the_layer() {
+    let layer = Layer::new().expect("layer");
+    let stored = Transition::new().expect("stored transition");
+    layer.set_action_for_key("position", Some(&stored));
+    assert!(layer.action_handle_for_key("position").is_some());
+    assert!(layer.action_for_key("opacity").is_none());
+
+    let mut delegate = LayerDelegate::new().expect("delegate");
+    delegate.set_action_provider(|_layer, key| {
+        if key == "position" {
+            Action::null()
+        } else {
+            Transition::new().map(|transition| Action::retained_from(&transition))
+        }
+    });
+    layer.set_delegate(Some(&delegate));
+
+    for _ in 0..3 {
+        assert!(layer.action_handle_for_key("position").is_none());
+        assert!(layer.action_for_key("opacity").is_some());
+    }
+    layer.set_delegate(None);
+    assert!(layer.action_handle_for_key("position").is_some());
+}
