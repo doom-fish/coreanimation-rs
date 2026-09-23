@@ -227,8 +227,15 @@ public func ca_gradient_layer_color_count(_ handle: UnsafeMutableRawPointer?) ->
 
 @_cdecl("ca_gradient_layer_color_at")
 public func ca_gradient_layer_color_at(_ handle: UnsafeMutableRawPointer?, _ index: Int) -> UnsafeMutableRawPointer? {
-    guard let layer: CAGradientLayer = caBorrow(handle), let colors = layer.colors, index >= 0, index < colors.count else { return nil }
-    return caRetain(colors[index] as AnyObject)
+    guard let layer: CAGradientLayer = caBorrow(handle),
+          let colors = layer.colors,
+          index >= 0,
+          index < colors.count,
+          let color = caCFObject(colors[index], typeID: CGColor.typeID)
+    else {
+        return nil
+    }
+    return caRetain(color)
 }
 
 @_cdecl("ca_gradient_layer_set_locations")

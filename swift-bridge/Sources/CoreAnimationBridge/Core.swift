@@ -21,6 +21,12 @@ func caReleaseHandle(_ handle: UnsafeMutableRawPointer?) {
     Unmanaged<AnyObject>.fromOpaque(handle).release()
 }
 
+func caCFObject(_ value: Any?, typeID: CFTypeID) -> AnyObject? {
+    guard let value else { return nil }
+    let object = value as AnyObject
+    return CFGetTypeID(object) == typeID ? object : nil
+}
+
 final class CAContextOwner {
     let context: UnsafeMutableRawPointer
     private let release: @convention(c) (UnsafeMutableRawPointer?) -> Void

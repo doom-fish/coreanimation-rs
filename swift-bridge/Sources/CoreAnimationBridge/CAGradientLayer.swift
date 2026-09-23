@@ -30,7 +30,13 @@ private func caWriteGradientColorComponents(_ color: CGColor, out: UnsafeMutable
 
 @_cdecl("ca_gradient_layer_get_color_components_at")
 public func ca_gradient_layer_get_color_components_at(_ handle: UnsafeMutableRawPointer?, _ index: Int, _ outComponents: UnsafeMutableRawPointer?) -> Bool {
-    guard let layer: CAGradientLayer = caBorrow(handle), let colors = layer.colors, index >= 0, index < colors.count else { return false }
-    let color = colors[index] as! CGColor
-    return caWriteGradientColorComponents(color, out: outComponents)
+    guard let layer: CAGradientLayer = caBorrow(handle),
+          let colors = layer.colors,
+          index >= 0,
+          index < colors.count,
+          let color = caCFObject(colors[index], typeID: CGColor.typeID)
+    else {
+        return false
+    }
+    return caWriteGradientColorComponents(unsafeBitCast(color, to: CGColor.self), out: outComponents)
 }

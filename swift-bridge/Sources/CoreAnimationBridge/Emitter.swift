@@ -264,8 +264,10 @@ public func ca_emitter_cell_set_contents(_ handle: UnsafeMutableRawPointer?, _ i
 
 @_cdecl("ca_emitter_cell_get_contents")
 public func ca_emitter_cell_get_contents(_ handle: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    guard let cell: CAEmitterCell = caBorrow(handle), let contents = cell.contents else { return nil }
-    return caRetain(contents as AnyObject)
+    guard let cell: CAEmitterCell = caBorrow(handle), let image = caCFObject(cell.contents, typeID: CGImage.typeID) else {
+        return nil
+    }
+    return caRetain(image)
 }
 
 @_cdecl("ca_emitter_cell_get_alpha_speed")

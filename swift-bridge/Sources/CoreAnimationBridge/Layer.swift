@@ -100,8 +100,10 @@ public func ca_layer_set_contents(_ handle: UnsafeMutableRawPointer?, _ imageHan
 
 @_cdecl("ca_layer_get_contents")
 public func ca_layer_get_contents(_ handle: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    guard let layer: CALayer = caBorrow(handle), let contents = layer.contents else { return nil }
-    return caRetain(contents as AnyObject)
+    guard let layer: CALayer = caBorrow(handle), let image = caCFObject(layer.contents, typeID: CGImage.typeID) else {
+        return nil
+    }
+    return caRetain(image)
 }
 
 @_cdecl("ca_layer_get_contents_scale")

@@ -20,3 +20,19 @@ fn calayer_round_trip_properties() {
         Transform3D::translation(1.0, 2.0, 3.0)
     );
 }
+
+#[test]
+fn contents_that_are_not_images_read_as_none() {
+    let layer = Layer::new().expect("layer");
+    layer.set_frame(coreanimation::CGRect::new(0.0, 0.0, 10.0, 10.0));
+    layer.set_needs_display();
+    layer.display();
+
+    let contents = layer.contents();
+
+    assert!(
+        contents.is_none(),
+        "backing store surfaced as a CGImage of width {:?}",
+        contents.map(|image| image.width())
+    );
+}
