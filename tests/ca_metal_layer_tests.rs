@@ -111,3 +111,22 @@ fn developer_hud_properties_round_trip() {
         .expect("clear properties");
     assert_eq!(layer.developer_hud_properties(), None);
 }
+
+#[test]
+fn cloned_drawables_retain_their_own_reference() {
+    let device = MetalDevice::system_default().expect("metal device");
+    for _ in 0..20 {
+        let layer = MetalLayer::new().expect("layer");
+        layer.set_device(Some(&device));
+        layer.set_pixel_format(apple_metal::pixel_format::BGRA8UNORM);
+        layer.set_drawable_size(apple_cf::cg::CGSize::new(8.0, 8.0));
+        let Some(drawable) = layer.next_drawable() else {
+            eprintln!("skipping: the layer vended no drawable");
+            return;
+        };
+        let copy = drawable.clone();
+        drop(drawable);
+        assert_eq!(copy.texture().expect("drawable texture").width(), 8);
+        drop(copy);
+    }
+}

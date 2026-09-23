@@ -645,11 +645,20 @@ layer_wrapper!(TextLayer, crate::ffi::ca_text_layer_new);
 layer_wrapper!(GradientLayer, crate::ffi::ca_gradient_layer_new);
 layer_wrapper!(MetalLayer, crate::ffi::ca_metal_layer_new);
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 /// Safe wrapper around `CAMetalDrawable`. See <https://developer.apple.com/documentation/quartzcore/cametaldrawable>.
 pub struct MetalDrawable {
     ptr: *mut core::ffi::c_void,
     owned: bool,
+}
+
+impl Clone for MetalDrawable {
+    fn clone(&self) -> Self {
+        Self {
+            ptr: unsafe { crate::ffi::ca_retain(self.ptr) },
+            owned: true,
+        }
+    }
 }
 
 impl Drop for MetalDrawable {
