@@ -1,5 +1,7 @@
 # coreanimation-rs coverage audit (vs MacOSX26.2.sdk)
 
+> **What this measures:** top-level `CA*.h` symbols only (classes, protocols, typealiases, constants, functions). VERIFIED means a named Rust item exists for the symbol, not that all of its members are wrapped; class members are not counted. The table was generated against `MacOSX26.2.sdk` and has not been regenerated. See `COVERAGE.md` for known member gaps.
+
 - Scope: `QuartzCore.framework` `CA*.h` CoreAnimation headers only (not the bundled CoreImage/CoreVideo umbrella headers).
 - Filtered out macOS-unavailable surface: `CAEAGLLayer` (`API_UNAVAILABLE(macos, ...)`).
 - Deprecated macOS symbol kept as EXEMPT: `CAOpenGLLayer`.
@@ -139,7 +141,7 @@ NON_EXEMPT_COVERAGE_PCT: 100.0%
 | `CATransaction` | interface | `CATransaction.h` | `Transaction` |
 | `kCATransactionAnimationDuration` | constant | `CATransaction.h` | `Transaction::{animation_duration, set_animation_duration}` |
 | `kCATransactionAnimationTimingFunction` | constant | `CATransaction.h` | `Transaction::{animation_timing_function_name, set_animation_timing_function_name}` |
-| `kCATransactionCompletionBlock` | constant | `CATransaction.h` | `Transaction::set_completion_block` |
+| `kCATransactionCompletionBlock` | constant | `CATransaction.h` | `Transaction::set_completion_handler` |
 | `kCATransactionDisableActions` | constant | `CATransaction.h` | `Transaction::{disable_actions, set_disable_actions}` |
 | `CATransform3D` | typedef | `CATransform3D.h` | `Transform3D` |
 | `CATransform3DEqualToTransform` | function | `CATransform3D.h` | `Transform3D: PartialEq` |
@@ -209,7 +211,7 @@ NON_EXEMPT_COVERAGE_PCT: 100.0%
 | `CATransform3DTranslate` | function | `CATransform3D.h` | `Transform3D::translated` |
 
 ## 🔴 GAPS
-None. All non-exempt QuartzCore `CA*.h` symbols from the audit are wrapped.
+No top-level symbol lacks a Rust item. Member gaps are not tracked here; see `COVERAGE.md`.
 
 ## ⏭️ EXEMPT
 | Symbol | Kind | Header | Reason | SDK attribute |

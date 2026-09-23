@@ -1,5 +1,7 @@
 # coreanimation-rs coverage audit v2 (vs MacOSX26.2.sdk)
 
+> **What this measures:** top-level `CA*.h` symbols only (classes, protocols, typealiases, constants, functions). VERIFIED means a named Rust item exists for the symbol, not that all of its members are wrapped; class members are not counted. The table was generated against `MacOSX26.2.sdk` and has not been regenerated. See `COVERAGE.md` for known member gaps.
+
 SDK_PUBLIC_SYMBOLS: 194
 VERIFIED: 193
 GAPS: 0
@@ -136,7 +138,7 @@ Audit methodology: Enumeration of QuartzCore `CA*.h` headers (27 files) filtered
 | `CATransaction` | interface | `CATransaction.h` | `Transaction` |
 | `kCATransactionAnimationDuration` | constant | `CATransaction.h` | `Transaction::{animation_duration, set_animation_duration}` |
 | `kCATransactionAnimationTimingFunction` | constant | `CATransaction.h` | `Transaction::{animation_timing_function_name, set_animation_timing_function_name}` |
-| `kCATransactionCompletionBlock` | constant | `CATransaction.h` | `Transaction::set_completion_block` |
+| `kCATransactionCompletionBlock` | constant | `CATransaction.h` | `Transaction::set_completion_handler` |
 | `kCATransactionDisableActions` | constant | `CATransaction.h` | `Transaction::{disable_actions, set_disable_actions}` |
 | `CATransform3D` | typedef | `CATransform3D.h` | `Transform3D` |
 | `CATransform3DEqualToTransform` | function | `CATransform3D.h` | `Transform3D: PartialEq` |
@@ -206,7 +208,7 @@ Audit methodology: Enumeration of QuartzCore `CA*.h` headers (27 files) filtered
 | `CATransform3DTranslate` | function | `CATransform3D.h` | `Transform3D::translated` |
 
 ## 🔴 GAPS
-None. All non-exempt QuartzCore `CA*.h` symbols from the audit are wrapped.
+No top-level symbol lacks a Rust item. Member gaps are not tracked here; see `COVERAGE.md`.
 
 ## ⏭️ EXEMPT
 | Symbol | Kind | Header | Reason | SDK attribute |
