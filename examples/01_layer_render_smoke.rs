@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .ok_or("failed to allocate render target texture")?;
 
     let layer = Layer::new().ok_or("failed to create layer")?;
-    layer.set_frame(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64));
+    layer.set_frame(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64))?;
     layer.set_background_color(Some(&Color::red()));
 
     let renderer = Renderer::new(&texture, Some(&queue)).ok_or("failed to create renderer")?;

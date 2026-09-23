@@ -1,3 +1,4 @@
+import CoreAnimationObjCBridge
 import CoreGraphics
 import CoreVideo
 import Foundation
@@ -19,6 +20,32 @@ func caBorrow<T>(_ handle: UnsafeMutableRawPointer?) -> T? {
 func caReleaseHandle(_ handle: UnsafeMutableRawPointer?) {
     guard let handle else { return }
     Unmanaged<AnyObject>.fromOpaque(handle).release()
+}
+
+func caIsSelfOrAncestor(_ candidate: CALayer, of layer: CALayer) -> Bool {
+    var current: CALayer? = layer
+    var steps = 0
+    while let node = current {
+        if node === candidate || steps > 100_000 {
+            return true
+        }
+        current = node.superlayer
+        steps += 1
+    }
+    return false
+}
+
+func caSetBounds(
+    _ layer: CALayer,
+    _ bounds: CGRect,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    var reason: NSString?
+    let accepted = ca_objc_set_bounds(layer, bounds, &reason)
+    if !accepted {
+        outError?.pointee = caDup(reason as String?)
+    }
+    return accepted
 }
 
 func caCFObject(_ value: Any?, typeID: CFTypeID) -> AnyObject? {

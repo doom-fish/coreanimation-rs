@@ -2,7 +2,8 @@ use std::ops::Deref;
 
 use apple_cf::cg::{CGPoint, CGRect};
 
-use crate::layer::{Layer, LayerLike};
+use crate::error::CoreAnimationError;
+use crate::layer::{bridge_result, ensure_finite, ensure_finite_rect, Layer, LayerLike};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(i32)]
@@ -62,22 +63,34 @@ impl ScrollLayer {
         }
     }
 
-    pub fn scroll_to_point(&self, point: CGPoint) {
-        unsafe {
-            crate::ffi::ca_scroll_layer_scroll_to_point(self.as_layer_ptr(), point.x, point.y)
+    pub fn scroll_to_point(&self, point: CGPoint) -> Result<(), CoreAnimationError> {
+        ensure_finite("scroll point", &[point.x, point.y])?;
+        let mut error = core::ptr::null_mut();
+        let accepted = unsafe {
+            crate::ffi::ca_scroll_layer_scroll_to_point(
+                self.as_layer_ptr(),
+                point.x,
+                point.y,
+                &raw mut error,
+            )
         };
+        bridge_result(accepted, error, "CAScrollLayer rejected the scroll point")
     }
 
-    pub fn scroll_to_rect(&self, rect: CGRect) {
-        unsafe {
+    pub fn scroll_to_rect(&self, rect: CGRect) -> Result<(), CoreAnimationError> {
+        ensure_finite_rect("scroll rect", rect)?;
+        let mut error = core::ptr::null_mut();
+        let accepted = unsafe {
             crate::ffi::ca_scroll_layer_scroll_to_rect(
                 self.as_layer_ptr(),
                 rect.origin.x,
                 rect.origin.y,
                 rect.size.width,
                 rect.size.height,
+                &raw mut error,
             )
         };
+        bridge_result(accepted, error, "CAScrollLayer rejected the scroll rect")
     }
 }
 

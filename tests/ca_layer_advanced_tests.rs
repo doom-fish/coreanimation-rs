@@ -76,8 +76,10 @@ fn calayer_advanced_surface_round_trip() {
 
     let display_called = Arc::new(AtomicBool::new(false));
     let child = Layer::new().expect("child layer");
-    child.set_frame(CGRect::new(0.0, 0.0, 4.0, 4.0));
-    layer.add_sublayer(&child);
+    child
+        .set_frame(CGRect::new(0.0, 0.0, 4.0, 4.0))
+        .expect("frame");
+    layer.add_sublayer(&child).expect("add sublayer");
 
     let mut delegate = LayerDelegate::new().expect("delegate");
     delegate.set_display_callback({
@@ -136,4 +138,30 @@ fn delegate_action_provider_results_reach_the_layer() {
     }
     layer.set_delegate(None);
     assert!(layer.action_handle_for_key("position").is_some());
+}
+
+#[test]
+fn constraints_need_finite_scale_and_offset() {
+    for (scale, offset) in [
+        (f64::NAN, 0.0),
+        (1.0, f64::INFINITY),
+        (f64::NEG_INFINITY, 1.0),
+    ] {
+        assert!(Constraint::new(
+            ConstraintAttribute::Width,
+            "superlayer",
+            ConstraintAttribute::Width,
+            scale,
+            offset,
+        )
+        .is_none());
+    }
+    assert!(Constraint::new(
+        ConstraintAttribute::Width,
+        "superlayer",
+        ConstraintAttribute::Width,
+        0.5,
+        -2.0,
+    )
+    .is_some());
 }

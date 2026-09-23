@@ -69,6 +69,9 @@ impl Constraint {
         scale: f64,
         offset: f64,
     ) -> Option<Self> {
+        if !(scale.is_finite() && offset.is_finite()) {
+            return None;
+        }
         let source_name = cstring_from_str(source_name)?;
         unsafe {
             Self::from_raw(crate::ffi::ca_constraint_new(

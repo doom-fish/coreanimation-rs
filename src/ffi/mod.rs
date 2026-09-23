@@ -65,18 +65,37 @@ unsafe extern "C" {
 
     pub fn ca_layer_new() -> *mut c_void;
     pub fn ca_layer_get_frame(handle: *mut c_void, out_rect: *mut c_void) -> bool;
-    pub fn ca_layer_set_frame(handle: *mut c_void, x: f64, y: f64, width: f64, height: f64);
+    pub fn ca_layer_set_frame(
+        handle: *mut c_void,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        out_error: *mut *mut c_char,
+    ) -> bool;
     pub fn ca_layer_get_bounds(handle: *mut c_void, out_rect: *mut c_void) -> bool;
-    pub fn ca_layer_set_bounds(handle: *mut c_void, x: f64, y: f64, width: f64, height: f64);
+    pub fn ca_layer_set_bounds(
+        handle: *mut c_void,
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+        out_error: *mut *mut c_char,
+    ) -> bool;
     pub fn ca_layer_get_position(handle: *mut c_void, out_point: *mut c_void) -> bool;
-    pub fn ca_layer_set_position(handle: *mut c_void, x: f64, y: f64);
+    pub fn ca_layer_set_position(
+        handle: *mut c_void,
+        x: f64,
+        y: f64,
+        out_error: *mut *mut c_char,
+    ) -> bool;
     pub fn ca_layer_get_anchor_point(handle: *mut c_void, out_point: *mut c_void) -> bool;
     pub fn ca_layer_set_anchor_point(handle: *mut c_void, x: f64, y: f64);
     pub fn ca_layer_get_transform(handle: *mut c_void, out_transform: *mut c_void) -> bool;
     pub fn ca_layer_set_transform(handle: *mut c_void, transform: *const c_void);
     pub fn ca_layer_sublayer_count(handle: *mut c_void) -> usize;
     pub fn ca_layer_sublayer_at(handle: *mut c_void, index: usize) -> *mut c_void;
-    pub fn ca_layer_add_sublayer(handle: *mut c_void, child: *mut c_void);
+    pub fn ca_layer_add_sublayer(handle: *mut c_void, child: *mut c_void) -> bool;
     pub fn ca_layer_remove_from_superlayer(handle: *mut c_void);
     pub fn ca_layer_set_contents(handle: *mut c_void, image_handle: *mut c_void);
     pub fn ca_layer_get_contents(handle: *mut c_void) -> *mut c_void;
@@ -94,7 +113,7 @@ unsafe extern "C" {
     pub fn ca_layer_set_opacity(handle: *mut c_void, value: f32);
     pub fn ca_layer_is_hidden(handle: *mut c_void) -> bool;
     pub fn ca_layer_set_hidden(handle: *mut c_void, hidden: bool);
-    pub fn ca_layer_set_mask(handle: *mut c_void, mask_handle: *mut c_void);
+    pub fn ca_layer_set_mask(handle: *mut c_void, mask_handle: *mut c_void) -> bool;
     pub fn ca_layer_get_mask(handle: *mut c_void) -> *mut c_void;
     pub fn ca_layer_get_masks_to_bounds(handle: *mut c_void) -> bool;
     pub fn ca_layer_set_masks_to_bounds(handle: *mut c_void, value: bool);
@@ -227,7 +246,11 @@ unsafe extern "C" {
     pub fn ca_metal_layer_new() -> *mut c_void;
     pub fn ca_metal_layer_set_device(handle: *mut c_void, device_handle: *mut c_void);
     pub fn ca_metal_layer_get_pixel_format(handle: *mut c_void) -> usize;
-    pub fn ca_metal_layer_set_pixel_format(handle: *mut c_void, pixel_format: usize);
+    pub fn ca_metal_layer_set_pixel_format(
+        handle: *mut c_void,
+        pixel_format: usize,
+        out_error: *mut *mut c_char,
+    ) -> bool;
     pub fn ca_metal_layer_get_drawable_size(handle: *mut c_void, out_size: *mut c_void) -> bool;
     pub fn ca_metal_layer_set_drawable_size(handle: *mut c_void, width: f64, height: f64);
     pub fn ca_metal_layer_next_drawable(handle: *mut c_void) -> *mut c_void;
@@ -716,14 +739,20 @@ unsafe extern "C" {
     pub fn ca_scroll_layer_get_scroll_mode(handle: *mut c_void) -> i32;
     pub fn ca_scroll_layer_set_scroll_mode(handle: *mut c_void, value: i32);
     pub fn ca_scroll_layer_get_visible_rect(handle: *mut c_void, out_rect: *mut c_void) -> bool;
-    pub fn ca_scroll_layer_scroll_to_point(handle: *mut c_void, x: f64, y: f64);
+    pub fn ca_scroll_layer_scroll_to_point(
+        handle: *mut c_void,
+        x: f64,
+        y: f64,
+        out_error: *mut *mut c_char,
+    ) -> bool;
     pub fn ca_scroll_layer_scroll_to_rect(
         handle: *mut c_void,
         x: f64,
         y: f64,
         width: f64,
         height: f64,
-    );
+        out_error: *mut *mut c_char,
+    ) -> bool;
 
     pub fn ca_tiled_layer_new() -> *mut c_void;
     pub fn ca_tiled_layer_get_levels_of_detail(handle: *mut c_void) -> usize;

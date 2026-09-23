@@ -19,7 +19,9 @@ fn caremotelayer_and_carenderer_color_space_round_trip() {
 
     let layer = Layer::new().expect("layer");
     layer.set_name("remote-root");
-    layer.set_frame(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64));
+    layer
+        .set_frame(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64))
+        .expect("frame");
     layer.set_background_color(Some(&Color::green()));
 
     client.set_layer(Some(&layer));

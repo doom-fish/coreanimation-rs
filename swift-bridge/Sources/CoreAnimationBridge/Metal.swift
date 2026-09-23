@@ -1,3 +1,4 @@
+import CoreAnimationObjCBridge
 import CoreGraphics
 import Foundation
 import Metal
@@ -22,9 +23,23 @@ public func ca_metal_layer_get_pixel_format(_ handle: UnsafeMutableRawPointer?) 
 }
 
 @_cdecl("ca_metal_layer_set_pixel_format")
-public func ca_metal_layer_set_pixel_format(_ handle: UnsafeMutableRawPointer?, _ pixelFormat: Int) {
-    guard let layer: CAMetalLayer = caBorrow(handle), let pixelFormat = MTLPixelFormat(rawValue: UInt(pixelFormat)) else { return }
-    layer.pixelFormat = pixelFormat
+public func ca_metal_layer_set_pixel_format(
+    _ handle: UnsafeMutableRawPointer?,
+    _ pixelFormat: Int,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    guard let layer: CAMetalLayer = caBorrow(handle),
+          let raw = UInt(exactly: pixelFormat),
+          let format = MTLPixelFormat(rawValue: raw)
+    else {
+        return false
+    }
+    var reason: NSString?
+    let accepted = ca_objc_set_pixel_format(layer, format, &reason)
+    if !accepted {
+        outError?.pointee = caDup(reason as String?)
+    }
+    return accepted
 }
 
 @_cdecl("ca_metal_layer_get_drawable_size")

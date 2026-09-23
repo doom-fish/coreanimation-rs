@@ -1,3 +1,4 @@
+import CoreAnimationObjCBridge
 import CoreGraphics
 import Foundation
 import QuartzCore
@@ -14,9 +15,21 @@ public func ca_layer_get_frame(_ handle: UnsafeMutableRawPointer?, _ outRect: Un
 }
 
 @_cdecl("ca_layer_set_frame")
-public func ca_layer_set_frame(_ handle: UnsafeMutableRawPointer?, _ x: Double, _ y: Double, _ width: Double, _ height: Double) {
-    guard let layer: CALayer = caBorrow(handle) else { return }
-    layer.frame = CGRect(x: x, y: y, width: width, height: height)
+public func ca_layer_set_frame(
+    _ handle: UnsafeMutableRawPointer?,
+    _ x: Double,
+    _ y: Double,
+    _ width: Double,
+    _ height: Double,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    guard let layer: CALayer = caBorrow(handle) else { return false }
+    var reason: NSString?
+    let accepted = ca_objc_set_frame(layer, CGRect(x: x, y: y, width: width, height: height), &reason)
+    if !accepted {
+        outError?.pointee = caDup(reason as String?)
+    }
+    return accepted
 }
 
 @_cdecl("ca_layer_get_bounds")
@@ -26,9 +39,16 @@ public func ca_layer_get_bounds(_ handle: UnsafeMutableRawPointer?, _ outRect: U
 }
 
 @_cdecl("ca_layer_set_bounds")
-public func ca_layer_set_bounds(_ handle: UnsafeMutableRawPointer?, _ x: Double, _ y: Double, _ width: Double, _ height: Double) {
-    guard let layer: CALayer = caBorrow(handle) else { return }
-    layer.bounds = CGRect(x: x, y: y, width: width, height: height)
+public func ca_layer_set_bounds(
+    _ handle: UnsafeMutableRawPointer?,
+    _ x: Double,
+    _ y: Double,
+    _ width: Double,
+    _ height: Double,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    guard let layer: CALayer = caBorrow(handle) else { return false }
+    return caSetBounds(layer, CGRect(x: x, y: y, width: width, height: height), outError)
 }
 
 @_cdecl("ca_layer_get_position")
@@ -38,9 +58,19 @@ public func ca_layer_get_position(_ handle: UnsafeMutableRawPointer?, _ outPoint
 }
 
 @_cdecl("ca_layer_set_position")
-public func ca_layer_set_position(_ handle: UnsafeMutableRawPointer?, _ x: Double, _ y: Double) {
-    guard let layer: CALayer = caBorrow(handle) else { return }
-    layer.position = CGPoint(x: x, y: y)
+public func ca_layer_set_position(
+    _ handle: UnsafeMutableRawPointer?,
+    _ x: Double,
+    _ y: Double,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    guard let layer: CALayer = caBorrow(handle) else { return false }
+    var reason: NSString?
+    let accepted = ca_objc_set_position(layer, CGPoint(x: x, y: y), &reason)
+    if !accepted {
+        outError?.pointee = caDup(reason as String?)
+    }
+    return accepted
 }
 
 @_cdecl("ca_layer_get_anchor_point")
@@ -80,9 +110,15 @@ public func ca_layer_sublayer_at(_ handle: UnsafeMutableRawPointer?, _ index: In
 }
 
 @_cdecl("ca_layer_add_sublayer")
-public func ca_layer_add_sublayer(_ handle: UnsafeMutableRawPointer?, _ childHandle: UnsafeMutableRawPointer?) {
-    guard let layer: CALayer = caBorrow(handle), let child: CALayer = caBorrow(childHandle) else { return }
+public func ca_layer_add_sublayer(_ handle: UnsafeMutableRawPointer?, _ childHandle: UnsafeMutableRawPointer?) -> Bool {
+    guard let layer: CALayer = caBorrow(handle),
+          let child: CALayer = caBorrow(childHandle),
+          !caIsSelfOrAncestor(child, of: layer)
+    else {
+        return false
+    }
     layer.addSublayer(child)
+    return true
 }
 
 @_cdecl("ca_layer_remove_from_superlayer")
@@ -193,10 +229,19 @@ public func ca_layer_set_hidden(_ handle: UnsafeMutableRawPointer?, _ hidden: Bo
 }
 
 @_cdecl("ca_layer_set_mask")
-public func ca_layer_set_mask(_ handle: UnsafeMutableRawPointer?, _ maskHandle: UnsafeMutableRawPointer?) {
-    guard let layer: CALayer = caBorrow(handle) else { return }
-    let mask: CALayer? = caBorrow(maskHandle)
+public func ca_layer_set_mask(_ handle: UnsafeMutableRawPointer?, _ maskHandle: UnsafeMutableRawPointer?) -> Bool {
+    guard let layer: CALayer = caBorrow(handle) else { return false }
+    guard let maskHandle else {
+        layer.mask = nil
+        return true
+    }
+    guard let mask: CALayer = caBorrow(maskHandle) else { return false }
+    if layer.mask === mask {
+        return true
+    }
+    guard mask.superlayer == nil, !caIsSelfOrAncestor(mask, of: layer) else { return false }
     layer.mask = mask
+    return true
 }
 
 @_cdecl("ca_layer_get_mask")

@@ -13,7 +13,9 @@ fn added_update_rects_become_the_update_bounds() {
     descriptor.usage = texture_usage::RENDER_TARGET | texture_usage::SHADER_READ;
     let texture = device.new_texture(descriptor).expect("texture");
     let layer = Layer::new().expect("layer");
-    layer.set_frame(CGRect::new(0.0, 0.0, 64.0, 64.0));
+    layer
+        .set_frame(CGRect::new(0.0, 0.0, 64.0, 64.0))
+        .expect("frame");
     layer.set_background_color(Some(&Color::red()));
     let renderer = Renderer::new(&texture, Some(&queue)).expect("renderer");
     renderer.set_layer(Some(&layer));

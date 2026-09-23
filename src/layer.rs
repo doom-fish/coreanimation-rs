@@ -8,6 +8,7 @@ use apple_cf::cg::{CGPoint, CGRect, CGSize};
 use crate::animation::{Animation, AnimationLike};
 use crate::ca_action::Action;
 use crate::color::Color;
+use crate::error::CoreAnimationError;
 use crate::path::Path;
 use crate::private::{cstring_from_str, handle_type};
 use crate::transform::Transform3D;
@@ -726,16 +727,20 @@ impl Layer {
     }
 
     /// Sets the layer's frame.
-    pub fn set_frame(&self, rect: CGRect) {
-        unsafe {
+    pub fn set_frame(&self, rect: CGRect) -> Result<(), CoreAnimationError> {
+        ensure_finite_rect("frame", rect)?;
+        let mut error = core::ptr::null_mut();
+        let accepted = unsafe {
             crate::ffi::ca_layer_set_frame(
                 self.as_ptr(),
                 rect.origin.x,
                 rect.origin.y,
                 rect.size.width,
                 rect.size.height,
+                &raw mut error,
             )
         };
+        bridge_result(accepted, error, "CALayer rejected the frame")
     }
 
     #[must_use]
@@ -756,16 +761,20 @@ impl Layer {
     }
 
     /// Sets the layer's bounds.
-    pub fn set_bounds(&self, rect: CGRect) {
-        unsafe {
+    pub fn set_bounds(&self, rect: CGRect) -> Result<(), CoreAnimationError> {
+        ensure_finite_rect("bounds", rect)?;
+        let mut error = core::ptr::null_mut();
+        let accepted = unsafe {
             crate::ffi::ca_layer_set_bounds(
                 self.as_ptr(),
                 rect.origin.x,
                 rect.origin.y,
                 rect.size.width,
                 rect.size.height,
+                &raw mut error,
             )
         };
+        bridge_result(accepted, error, "CALayer rejected the bounds")
     }
 
     #[must_use]
@@ -786,8 +795,13 @@ impl Layer {
     }
 
     /// Sets the layer's position.
-    pub fn set_position(&self, point: CGPoint) {
-        unsafe { crate::ffi::ca_layer_set_position(self.as_ptr(), point.x, point.y) };
+    pub fn set_position(&self, point: CGPoint) -> Result<(), CoreAnimationError> {
+        ensure_finite("position", &[point.x, point.y])?;
+        let mut error = core::ptr::null_mut();
+        let accepted = unsafe {
+            crate::ffi::ca_layer_set_position(self.as_ptr(), point.x, point.y, &raw mut error)
+        };
+        bridge_result(accepted, error, "CALayer rejected the position")
     }
 
     #[must_use]
@@ -808,8 +822,10 @@ impl Layer {
     }
 
     /// Sets the layer's anchor point.
-    pub fn set_anchor_point(&self, point: CGPoint) {
+    pub fn set_anchor_point(&self, point: CGPoint) -> Result<(), CoreAnimationError> {
+        ensure_finite("anchor point", &[point.x, point.y])?;
         unsafe { crate::ffi::ca_layer_set_anchor_point(self.as_ptr(), point.x, point.y) };
+        Ok(())
     }
 
     #[must_use]
@@ -830,13 +846,35 @@ impl Layer {
     }
 
     /// Sets the layer's transform.
-    pub fn set_transform(&self, transform: Transform3D) {
+    pub fn set_transform(&self, transform: Transform3D) -> Result<(), CoreAnimationError> {
+        ensure_finite(
+            "transform",
+            &[
+                transform.m11,
+                transform.m12,
+                transform.m13,
+                transform.m14,
+                transform.m21,
+                transform.m22,
+                transform.m23,
+                transform.m24,
+                transform.m31,
+                transform.m32,
+                transform.m33,
+                transform.m34,
+                transform.m41,
+                transform.m42,
+                transform.m43,
+                transform.m44,
+            ],
+        )?;
         unsafe {
             crate::ffi::ca_layer_set_transform(
                 self.as_ptr(),
                 (&transform as *const Transform3D).cast::<core::ffi::c_void>(),
             )
         };
+        Ok(())
     }
 
     #[must_use]
@@ -851,8 +889,14 @@ impl Layer {
     }
 
     /// Adds a child layer as a sublayer.
-    pub fn add_sublayer<L: LayerLike>(&self, child: &L) {
-        unsafe { crate::ffi::ca_layer_add_sublayer(self.as_ptr(), child.as_layer_ptr()) };
+    pub fn add_sublayer<L: LayerLike>(&self, child: &L) -> Result<(), CoreAnimationError> {
+        if unsafe { crate::ffi::ca_layer_add_sublayer(self.as_ptr(), child.as_layer_ptr()) } {
+            Ok(())
+        } else {
+            Err(CoreAnimationError::new(
+                "adding the sublayer would create a cycle in the layer tree",
+            ))
+        }
     }
 
     /// Removes the layer from its superlayer.
@@ -965,13 +1009,20 @@ impl Layer {
     }
 
     /// Sets the layer mask.
-    pub fn set_mask<L: LayerLike>(&self, mask: Option<&L>) {
-        unsafe {
+    pub fn set_mask<L: LayerLike>(&self, mask: Option<&L>) -> Result<(), CoreAnimationError> {
+        let accepted = unsafe {
             crate::ffi::ca_layer_set_mask(
                 self.as_ptr(),
                 mask.map_or(core::ptr::null_mut(), LayerLike::as_layer_ptr),
             )
         };
+        if accepted {
+            Ok(())
+        } else {
+            Err(CoreAnimationError::new(
+                "a mask layer must not have a superlayer and must not be this layer or an ancestor",
+            ))
+        }
     }
 
     #[must_use]
@@ -1419,8 +1470,20 @@ impl MetalLayer {
     }
 
     /// Sets the Metal layer's pixel format.
-    pub fn set_pixel_format(&self, pixel_format: usize) {
-        unsafe { crate::ffi::ca_metal_layer_set_pixel_format(self.as_layer_ptr(), pixel_format) };
+    pub fn set_pixel_format(&self, pixel_format: usize) -> Result<(), CoreAnimationError> {
+        let mut error = core::ptr::null_mut();
+        let accepted = unsafe {
+            crate::ffi::ca_metal_layer_set_pixel_format(
+                self.as_layer_ptr(),
+                pixel_format,
+                &raw mut error,
+            )
+        };
+        bridge_result(
+            accepted,
+            error,
+            &format!("CAMetalLayer does not support pixel format {pixel_format}"),
+        )
     }
 
     #[must_use]
@@ -1459,6 +1522,43 @@ impl MetalLayer {
                 self.as_layer_ptr(),
             ))
         }
+    }
+}
+
+pub(crate) fn ensure_finite(what: &str, values: &[f64]) -> Result<(), CoreAnimationError> {
+    if values.iter().all(|value| value.is_finite()) {
+        Ok(())
+    } else {
+        Err(CoreAnimationError::new(format!(
+            "{what} must be finite, got {values:?}"
+        )))
+    }
+}
+
+pub(crate) fn ensure_finite_rect(what: &str, rect: CGRect) -> Result<(), CoreAnimationError> {
+    ensure_finite(
+        what,
+        &[
+            rect.origin.x,
+            rect.origin.y,
+            rect.size.width,
+            rect.size.height,
+        ],
+    )
+}
+
+pub(crate) fn bridge_result(
+    accepted: bool,
+    error: *mut c_char,
+    fallback: &str,
+) -> Result<(), CoreAnimationError> {
+    let message = take_c_string(error);
+    if accepted {
+        Ok(())
+    } else {
+        Err(CoreAnimationError::new(
+            message.unwrap_or_else(|| fallback.to_owned()),
+        ))
     }
 }
 

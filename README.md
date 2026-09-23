@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("texture");
 
     let layer = Layer::new().expect("layer");
-    layer.set_frame(CGRect::new(0.0, 0.0, 100.0, 100.0));
+    layer.set_frame(CGRect::new(0.0, 0.0, 100.0, 100.0))?;
     layer.set_background_color(Some(&Color::red()));
 
     let renderer = Renderer::new(&texture, Some(&queue)).expect("renderer");

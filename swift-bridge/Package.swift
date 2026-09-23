@@ -14,7 +14,12 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "CoreAnimationObjCBridge",
+            path: "Sources/CoreAnimationObjCBridge",
+            publicHeadersPath: "include"),
+        .target(
             name: "CoreAnimationBridge",
+            dependencies: ["CoreAnimationObjCBridge"],
             path: "Sources/CoreAnimationBridge")
     ]
 )

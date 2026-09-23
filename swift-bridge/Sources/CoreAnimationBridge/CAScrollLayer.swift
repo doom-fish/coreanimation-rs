@@ -43,15 +43,27 @@ public func ca_scroll_layer_get_visible_rect(_ handle: UnsafeMutableRawPointer?,
 }
 
 @_cdecl("ca_scroll_layer_scroll_to_point")
-public func ca_scroll_layer_scroll_to_point(_ handle: UnsafeMutableRawPointer?, _ x: Double, _ y: Double) {
-    guard let layer: CAScrollLayer = caBorrow(handle) else { return }
+public func ca_scroll_layer_scroll_to_point(
+    _ handle: UnsafeMutableRawPointer?,
+    _ x: Double,
+    _ y: Double,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    guard let layer: CAScrollLayer = caBorrow(handle) else { return false }
     var bounds = layer.bounds
     bounds.origin = CGPoint(x: x, y: y)
-    layer.bounds = bounds
+    return caSetBounds(layer, bounds, outError)
 }
 
 @_cdecl("ca_scroll_layer_scroll_to_rect")
-public func ca_scroll_layer_scroll_to_rect(_ handle: UnsafeMutableRawPointer?, _ x: Double, _ y: Double, _ width: Double, _ height: Double) {
-    guard let layer: CAScrollLayer = caBorrow(handle) else { return }
-    layer.bounds = CGRect(x: x, y: y, width: width, height: height)
+public func ca_scroll_layer_scroll_to_rect(
+    _ handle: UnsafeMutableRawPointer?,
+    _ x: Double,
+    _ y: Double,
+    _ width: Double,
+    _ height: Double,
+    _ outError: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
+) -> Bool {
+    guard let layer: CAScrollLayer = caBorrow(handle) else { return false }
+    return caSetBounds(layer, CGRect(x: x, y: y, width: width, height: height), outError)
 }

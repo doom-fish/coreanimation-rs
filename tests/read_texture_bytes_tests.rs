@@ -150,7 +150,9 @@ fn framebuffer_only_drawables_are_rejected() {
     };
     let layer = MetalLayer::new().expect("metal layer");
     layer.set_device(Some(&device));
-    layer.set_pixel_format(pixel_format::BGRA8UNORM);
+    layer
+        .set_pixel_format(pixel_format::BGRA8UNORM)
+        .expect("pixel format");
     layer.set_drawable_size(CGSize::new(8.0, 8.0));
     assert!(layer.framebuffer_only());
     let Some(drawable) = layer.next_drawable() else {

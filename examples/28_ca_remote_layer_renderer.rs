@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let layer = Layer::new().ok_or("failed to create layer")?;
     layer.set_name("remote-root");
-    layer.set_frame(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64));
+    layer.set_frame(CGRect::new(0.0, 0.0, WIDTH_F64, HEIGHT_F64))?;
     layer.set_background_color(Some(&Color::green()));
     client.set_layer(Some(&layer));
     assert!(RemoteLayerServer::layer_with_client_id(client.client_id()).is_some());

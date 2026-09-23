@@ -41,8 +41,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let display_called = Arc::new(AtomicBool::new(false));
     let child = Layer::new().ok_or("failed to create child layer")?;
-    child.set_frame(CGRect::new(0.0, 0.0, 4.0, 4.0));
-    layer.add_sublayer(&child);
+    child.set_frame(CGRect::new(0.0, 0.0, 4.0, 4.0))?;
+    layer.add_sublayer(&child)?;
 
     let mut delegate = LayerDelegate::new().ok_or("failed to create delegate")?;
     delegate.set_display_callback({

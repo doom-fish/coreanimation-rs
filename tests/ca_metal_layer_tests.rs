@@ -118,7 +118,9 @@ fn cloned_drawables_retain_their_own_reference() {
     for _ in 0..20 {
         let layer = MetalLayer::new().expect("layer");
         layer.set_device(Some(&device));
-        layer.set_pixel_format(apple_metal::pixel_format::BGRA8UNORM);
+        layer
+            .set_pixel_format(apple_metal::pixel_format::BGRA8UNORM)
+            .expect("pixel format");
         layer.set_drawable_size(apple_cf::cg::CGSize::new(8.0, 8.0));
         let Some(drawable) = layer.next_drawable() else {
             eprintln!("skipping: the layer vended no drawable");
@@ -129,4 +131,34 @@ fn cloned_drawables_retain_their_own_reference() {
         assert_eq!(copy.texture().expect("drawable texture").width(), 8);
         drop(copy);
     }
+}
+
+#[test]
+fn unsupported_pixel_formats_are_refused() {
+    use apple_metal::pixel_format;
+
+    let layer = MetalLayer::new().expect("layer");
+    layer.set_device(Some(&MetalDevice::system_default().expect("metal device")));
+    layer
+        .set_pixel_format(pixel_format::BGRA8UNORM)
+        .expect("BGRA8Unorm");
+
+    for rejected in [
+        pixel_format::DEPTH32FLOAT,
+        pixel_format::BC1_RGBA,
+        pixel_format::INVALID,
+        9_999,
+        usize::MAX,
+    ] {
+        let error = layer
+            .set_pixel_format(rejected)
+            .expect_err("unsupported pixel format");
+        assert!(!error.to_string().is_empty());
+        assert_eq!(layer.pixel_format(), pixel_format::BGRA8UNORM);
+    }
+
+    layer
+        .set_pixel_format(pixel_format::RGBA16FLOAT)
+        .expect("RGBA16Float");
+    assert_eq!(layer.pixel_format(), pixel_format::RGBA16FLOAT);
 }
