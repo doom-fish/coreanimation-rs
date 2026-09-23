@@ -70,6 +70,10 @@ name = "01_layer_render_smoke"
 name = "transaction_completion_tests"
 harness = false
 
+[[test]]
+name = "animation_delegate_main_thread_tests"
+harness = false
+
 [profile.release]
 debug = "full"
 strip = "none"

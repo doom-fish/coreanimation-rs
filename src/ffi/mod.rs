@@ -8,6 +8,8 @@ pub use apple_cf::raw::{CVDisplayLinkOutputCallback, CVSMPTETime, CVTime, CVTime
 #[allow(clippy::upper_case_acronyms)]
 pub type TransactionCompletionCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
 
+pub type ContextReleaseCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
+
 #[allow(clippy::upper_case_acronyms)]
 pub type AnimationDidStartCallback =
     Option<unsafe extern "C" fn(context: *mut c_void, animation_handle: *mut c_void)>;
@@ -380,7 +382,7 @@ unsafe extern "C" {
     pub fn ca_transaction_set_completion_handler(
         callback: TransactionCompletionCallback,
         context: *mut c_void,
-        release: TransactionCompletionCallback,
+        release: ContextReleaseCallback,
     );
     pub fn ca_run_current_run_loop(seconds: f64);
 
@@ -494,17 +496,12 @@ unsafe extern "C" {
     pub fn ca_animation_set_repeat_duration(handle: *mut c_void, value: f64);
     pub fn ca_animation_get_fill_mode(handle: *mut c_void) -> i32;
     pub fn ca_animation_set_fill_mode(handle: *mut c_void, value: i32);
-    pub fn ca_animation_delegate_new() -> *mut c_void;
-    pub fn ca_animation_delegate_set_did_start_callback(
-        handle: *mut c_void,
-        callback: AnimationDidStartCallback,
+    pub fn ca_animation_delegate_new(
+        did_start: AnimationDidStartCallback,
+        did_stop: AnimationDidStopCallback,
         context: *mut c_void,
-    );
-    pub fn ca_animation_delegate_set_did_stop_callback(
-        handle: *mut c_void,
-        callback: AnimationDidStopCallback,
-        context: *mut c_void,
-    );
+        release: ContextReleaseCallback,
+    ) -> *mut c_void;
     pub fn ca_animation_set_delegate(handle: *mut c_void, delegate_handle: *mut c_void);
     pub fn ca_animation_supports_preferred_frame_rate_range() -> bool;
     pub fn ca_animation_get_preferred_frame_rate_range(handle: *mut c_void, out_range: *mut c_void);

@@ -14,45 +14,39 @@ public typealias CAAnimationDidStopCallback = @convention(c) (
 ) -> Void
 
 final class CAAnimationDelegateBox: NSObject, CAAnimationDelegate {
-    var didStartCallback: CAAnimationDidStartCallback?
-    var didStartContext: UnsafeMutableRawPointer?
-    var didStopCallback: CAAnimationDidStopCallback?
-    var didStopContext: UnsafeMutableRawPointer?
+    private let didStartCallback: CAAnimationDidStartCallback
+    private let didStopCallback: CAAnimationDidStopCallback
+    private let owner: CAContextOwner
+
+    init(
+        didStart: @escaping CAAnimationDidStartCallback,
+        didStop: @escaping CAAnimationDidStopCallback,
+        owner: CAContextOwner
+    ) {
+        didStartCallback = didStart
+        didStopCallback = didStop
+        self.owner = owner
+    }
 
     func animationDidStart(_ anim: CAAnimation) {
-        didStartCallback?(didStartContext, caRetain(anim))
+        didStartCallback(owner.context, caRetain(anim))
     }
 
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
-        didStopCallback?(didStopContext, caRetain(anim), flag)
+        didStopCallback(owner.context, caRetain(anim), flag)
     }
 }
 
 @_cdecl("ca_animation_delegate_new")
-public func ca_animation_delegate_new() -> UnsafeMutableRawPointer? {
-    caRetain(CAAnimationDelegateBox())
-}
-
-@_cdecl("ca_animation_delegate_set_did_start_callback")
-public func ca_animation_delegate_set_did_start_callback(
-    _ handle: UnsafeMutableRawPointer?,
-    _ callback: CAAnimationDidStartCallback?,
-    _ context: UnsafeMutableRawPointer?
-) {
-    guard let delegate: CAAnimationDelegateBox = caBorrow(handle) else { return }
-    delegate.didStartCallback = callback
-    delegate.didStartContext = context
-}
-
-@_cdecl("ca_animation_delegate_set_did_stop_callback")
-public func ca_animation_delegate_set_did_stop_callback(
-    _ handle: UnsafeMutableRawPointer?,
-    _ callback: CAAnimationDidStopCallback?,
-    _ context: UnsafeMutableRawPointer?
-) {
-    guard let delegate: CAAnimationDelegateBox = caBorrow(handle) else { return }
-    delegate.didStopCallback = callback
-    delegate.didStopContext = context
+public func ca_animation_delegate_new(
+    _ didStart: CAAnimationDidStartCallback?,
+    _ didStop: CAAnimationDidStopCallback?,
+    _ context: UnsafeMutableRawPointer?,
+    _ release: (@convention(c) (UnsafeMutableRawPointer?) -> Void)?
+) -> UnsafeMutableRawPointer? {
+    guard let owner = CAContextOwner(context, release) else { return nil }
+    guard let didStart, let didStop else { return nil }
+    return caRetain(CAAnimationDelegateBox(didStart: didStart, didStop: didStop, owner: owner))
 }
 
 @_cdecl("ca_animation_set_delegate")
