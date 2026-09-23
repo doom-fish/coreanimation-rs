@@ -21,6 +21,24 @@ func caReleaseHandle(_ handle: UnsafeMutableRawPointer?) {
     Unmanaged<AnyObject>.fromOpaque(handle).release()
 }
 
+final class CAContextOwner {
+    let context: UnsafeMutableRawPointer
+    private let release: @convention(c) (UnsafeMutableRawPointer?) -> Void
+
+    init?(
+        _ context: UnsafeMutableRawPointer?,
+        _ release: (@convention(c) (UnsafeMutableRawPointer?) -> Void)?
+    ) {
+        guard let context, let release else { return nil }
+        self.context = context
+        self.release = release
+    }
+
+    deinit {
+        release(context)
+    }
+}
+
 @inline(__always)
 func caDup(_ value: String?) -> UnsafeMutablePointer<CChar>? {
     guard let value else { return nil }

@@ -337,6 +337,11 @@ unsafe extern "C" {
         callback: TransactionCompletionCallback,
         context: *mut c_void,
     );
+    pub fn ca_transaction_set_completion_handler(
+        callback: TransactionCompletionCallback,
+        context: *mut c_void,
+        release: TransactionCompletionCallback,
+    );
     pub fn ca_run_current_run_loop(seconds: f64);
 
     pub fn ca_layer_get_z_position(handle: *mut c_void) -> f64;

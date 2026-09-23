@@ -66,6 +66,10 @@ maintenance = { status = "actively-developed" }
 [[example]]
 name = "01_layer_render_smoke"
 
+[[test]]
+name = "transaction_completion_tests"
+harness = false
+
 [profile.release]
 debug = "full"
 strip = "none"

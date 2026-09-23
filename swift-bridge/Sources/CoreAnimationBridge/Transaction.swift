@@ -63,3 +63,16 @@ public func ca_transaction_set_completion_block(_ callback: CATransactionComplet
         box.call()
     }
 }
+
+@_cdecl("ca_transaction_set_completion_handler")
+public func ca_transaction_set_completion_handler(
+    _ callback: CATransactionCompletionCallback?,
+    _ context: UnsafeMutableRawPointer?,
+    _ release: CATransactionCompletionCallback?
+) {
+    guard let owner = CAContextOwner(context, release) else { return }
+    guard let callback else { return }
+    CATransaction.setCompletionBlock {
+        callback(owner.context)
+    }
+}
