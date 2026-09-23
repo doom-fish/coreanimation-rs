@@ -46,9 +46,10 @@ The library is imported as `coreanimation`.
   `None` elsewhere.
 - Handlers run on the thread the framework chooses: `DisplayLink` output
   handlers on the `CoreVideo` display-link thread, `Transaction` completion
-  handlers on the main thread (only once the main run loop runs), and
-  `MetalDisplayLink` updates on the run loop it was added to. That is why the
-  first two must be `Send`.
+  handlers and `AnimationDelegate` callbacks on the main thread (only once the
+  main run loop runs), and `MetalDisplayLink` updates on the run loop it was
+  added to. That is why the first three must be `Send`. `LayerDelegate`
+  callbacks run on the thread that displays or lays out the layer.
 - Replacing or clearing a running `DisplayLink` output handler, and dropping its
   last handle, stops the link and waits for a handler that is still running.
   Don't do that on a thread the handler is waiting for.
