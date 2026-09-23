@@ -1,6 +1,7 @@
 use apple_cf::cg::CGColorSpace;
 
 use crate::ca_edr_metadata::EDRMetadata;
+use crate::error::CoreAnimationError;
 use crate::layer::{LayerLike, MetalLayer};
 
 impl MetalLayer {
@@ -22,10 +23,22 @@ impl MetalLayer {
     }
 
     /// Sets the Metal layer's maximum drawable count.
-    pub fn set_maximum_drawable_count(&self, value: usize) {
-        unsafe {
+    pub fn set_maximum_drawable_count(&self, value: usize) -> Result<(), CoreAnimationError> {
+        if !(2..=3).contains(&value) {
+            return Err(CoreAnimationError::new(format!(
+                "maximum drawable count must be 2 or 3, got {value}"
+            )));
+        }
+        let accepted = unsafe {
             crate::ffi::ca_metal_layer_set_maximum_drawable_count(self.as_layer_ptr(), value)
         };
+        if accepted {
+            Ok(())
+        } else {
+            Err(CoreAnimationError::new(
+                "CAMetalLayer rejected the maximum drawable count",
+            ))
+        }
     }
 
     #[must_use]

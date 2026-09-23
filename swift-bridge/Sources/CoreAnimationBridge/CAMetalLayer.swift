@@ -20,9 +20,10 @@ public func ca_metal_layer_get_maximum_drawable_count(_ handle: UnsafeMutableRaw
 }
 
 @_cdecl("ca_metal_layer_set_maximum_drawable_count")
-public func ca_metal_layer_set_maximum_drawable_count(_ handle: UnsafeMutableRawPointer?, _ value: Int) {
-    guard let layer: CAMetalLayer = caBorrow(handle) else { return }
-    layer.maximumDrawableCount = max(1, value)
+public func ca_metal_layer_set_maximum_drawable_count(_ handle: UnsafeMutableRawPointer?, _ value: Int) -> Bool {
+    guard let layer: CAMetalLayer = caBorrow(handle), value == 2 || value == 3 else { return false }
+    layer.maximumDrawableCount = value
+    return true
 }
 
 @_cdecl("ca_metal_layer_get_presents_with_transaction")

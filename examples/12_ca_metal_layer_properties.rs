@@ -6,7 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device = MetalDevice::system_default().ok_or("no Metal device available")?;
     layer.set_device(Some(&device));
     layer.set_framebuffer_only(false);
-    layer.set_maximum_drawable_count(3);
+    layer.set_maximum_drawable_count(3)?;
     layer.set_presents_with_transaction(true);
     layer.set_display_sync_enabled(false);
     layer.set_allows_next_drawable_timeout(false);

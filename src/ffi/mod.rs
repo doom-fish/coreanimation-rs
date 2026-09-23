@@ -581,7 +581,7 @@ unsafe extern "C" {
     pub fn ca_metal_layer_get_framebuffer_only(handle: *mut c_void) -> bool;
     pub fn ca_metal_layer_set_framebuffer_only(handle: *mut c_void, value: bool);
     pub fn ca_metal_layer_get_maximum_drawable_count(handle: *mut c_void) -> usize;
-    pub fn ca_metal_layer_set_maximum_drawable_count(handle: *mut c_void, value: usize);
+    pub fn ca_metal_layer_set_maximum_drawable_count(handle: *mut c_void, value: usize) -> bool;
     pub fn ca_metal_layer_get_presents_with_transaction(handle: *mut c_void) -> bool;
     pub fn ca_metal_layer_set_presents_with_transaction(handle: *mut c_void, value: bool);
     pub fn ca_metal_layer_get_display_sync_enabled(handle: *mut c_void) -> bool;
