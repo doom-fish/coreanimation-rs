@@ -103,6 +103,8 @@ unsafe extern "C" {
     pub fn ca_layer_get_contents(handle: *mut c_void) -> *mut c_void;
     pub fn ca_layer_get_contents_scale(handle: *mut c_void) -> f64;
     pub fn ca_layer_set_contents_scale(handle: *mut c_void, scale: f64);
+    pub fn ca_layer_is_opaque(handle: *mut c_void) -> bool;
+    pub fn ca_layer_set_opaque(handle: *mut c_void, opaque: bool);
     pub fn ca_layer_set_background_color(handle: *mut c_void, color_handle: *mut c_void);
     pub fn ca_layer_get_background_color(handle: *mut c_void) -> *mut c_void;
     pub fn ca_layer_set_border_color(handle: *mut c_void, color_handle: *mut c_void);

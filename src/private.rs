@@ -50,7 +50,7 @@ macro_rules! handle_type {
             }
 
             /// Wraps a borrowed raw pointer without taking ownership.
-            pub(crate) const unsafe fn from_raw_borrowed(ptr: *mut core::ffi::c_void) -> Self {
+            pub(crate) const unsafe fn from_raw_unowned(ptr: *mut core::ffi::c_void) -> Self {
                 Self { ptr, owned: false }
             }
 

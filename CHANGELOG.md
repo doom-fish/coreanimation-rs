@@ -5,6 +5,17 @@ All notable changes to `coreanimation-rs` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `Layer::from_raw_borrowed` retains a `CALayer` that other code owns, for example the layer of an `NSView`, and returns an owned wrapper.
+- `Layer::is_opaque` and `Layer::set_opaque`.
+
+### Changed
+
+- The crate-private handle constructor that does not take ownership has the name `from_raw_unowned`, so that `Layer::from_raw_borrowed` has the meaning that it has in `apple-cf`.
+
 ## [0.6.0] - 2026-09-24
 
 ### Security

@@ -710,6 +710,16 @@ impl Layer {
     }
 
     #[must_use]
+    #[allow(clippy::missing_safety_doc)]
+    pub unsafe fn from_raw_borrowed(ptr: *mut c_void) -> Option<Self> {
+        if ptr.is_null() {
+            None
+        } else {
+            Some(unsafe { Self::from_raw_unchecked(crate::ffi::ca_retain(ptr)) })
+        }
+    }
+
+    #[must_use]
     /// Returns the layer's frame.
     pub fn frame(&self) -> CGRect {
         let mut rect = CGRect::zero();
@@ -930,6 +940,15 @@ impl Layer {
     /// Sets the layer's contents scale.
     pub fn set_contents_scale(&self, scale: f64) {
         unsafe { crate::ffi::ca_layer_set_contents_scale(self.as_ptr(), scale) };
+    }
+
+    #[must_use]
+    pub fn is_opaque(&self) -> bool {
+        unsafe { crate::ffi::ca_layer_is_opaque(self.as_ptr()) }
+    }
+
+    pub fn set_opaque(&self, opaque: bool) {
+        unsafe { crate::ffi::ca_layer_set_opaque(self.as_ptr(), opaque) };
     }
 
     /// Sets the layer background color.

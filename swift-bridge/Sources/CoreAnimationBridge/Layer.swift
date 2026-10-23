@@ -154,6 +154,18 @@ public func ca_layer_set_contents_scale(_ handle: UnsafeMutableRawPointer?, _ sc
     layer.contentsScale = scale
 }
 
+@_cdecl("ca_layer_is_opaque")
+public func ca_layer_is_opaque(_ handle: UnsafeMutableRawPointer?) -> Bool {
+    guard let layer: CALayer = caBorrow(handle) else { return false }
+    return layer.isOpaque
+}
+
+@_cdecl("ca_layer_set_opaque")
+public func ca_layer_set_opaque(_ handle: UnsafeMutableRawPointer?, _ opaque: Bool) {
+    guard let layer: CALayer = caBorrow(handle) else { return }
+    layer.isOpaque = opaque
+}
+
 @_cdecl("ca_layer_set_background_color")
 public func ca_layer_set_background_color(_ handle: UnsafeMutableRawPointer?, _ colorHandle: UnsafeMutableRawPointer?) {
     guard let layer: CALayer = caBorrow(handle) else { return }
