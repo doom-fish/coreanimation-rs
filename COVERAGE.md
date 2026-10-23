@@ -53,6 +53,13 @@ Legend:
 | `CARemoteLayerClient` / `CARemoteLayerServer` / `CARenderer` color space | ✅ | `RemoteLayerClient`, `RemoteLayerServer`, `Renderer::new_with_color_space`, `Renderer::add_update_rect`, `CGColorSpace` | `examples/28_ca_remote_layer_renderer.rs`, `tests/ca_remote_layer_renderer_tests.rs`, `tests/renderer_update_rect_tests.rs` | Keeps the existing renderer constructor intact while adding the color-space option |
 | `CATransform3D` advanced helpers | ✅ | `Transform3D::{rotation, translated, scaled, rotated, concat, inverted, from_affine, is_affine, to_affine}`, `CGAffineTransform` | `examples/29_ca_transform3d.rs`, `tests/ca_transform3d_tests.rs` | Completes the remaining audited transform helper surface |
 
+## Additive display-link APIs
+
+| Area | Status | Current Rust surface | Evidence | Notes |
+| --- | --- | --- | --- | --- |
+| `CVDisplayLink` per-display process lifetime | 🟡 | `display_link::ImmortalDisplayLink::{for_display, display_id, set_output_handler, clear_output_handler, start, stop, is_running}`, `display_link::StartOutcome` | `src/display_link.rs` unit tests | `Send` and `Sync`. A `Pending` start gives a receiver. One native link per display stays for the process lifetime. No dedicated example or integration test. |
+| Core Video host clock | 🟡 | `display_link::{current_host_time, host_clock_frequency}` | `src/display_link.rs` unit tests | Gives host-clock ticks and ticks per second. No dedicated example or integration test. |
+
 ## Audit status
 
 - `COVERAGE_AUDIT.md` reports `193 / 193` non-exempt top-level QuartzCore `CA*.h` symbols with a named Rust item. It does not count members, so it says nothing about the member gaps below.

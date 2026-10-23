@@ -5,6 +5,7 @@ Safe Rust bindings for Apple's [QuartzCore / Core Animation](https://developer.a
 The crate wraps layers, animations, transactions, the three display links
 (`CVDisplayLink`, `CADisplayLink`, `CAMetalDisplayLink`), HDR/EDR metadata,
 remote layers, and offscreen `CARenderer` rendering into Metal textures.
+It also supplies a process-lifetime `CVDisplayLink` for each display.
 
 [`COVERAGE_AUDIT.md`](COVERAGE_AUDIT.md) names a Rust item for each of the 193
 non-deprecated top-level `CA*.h` symbols (classes, protocols, typealiases,
@@ -34,8 +35,8 @@ The library is imported as `coreanimation`.
 
 ## Threading
 
-- Every wrapper is `!Send` and `!Sync`, so a Rust value stays on the thread that
-  created it. Core Animation keeps its own data structures consistent when
+- Layer and animation wrappers are `!Send` and `!Sync`, so their values stay on the thread that
+  created them. Core Animation keeps its own data structures consistent when
   several threads touch layers, but changes made on a thread go into that
   thread's implicit transaction, which is only committed when the thread's run
   loop turns. On threads without a run loop (worker and test threads, offscreen
@@ -53,6 +54,8 @@ The library is imported as `coreanimation`.
 - Replacing or clearing a running `DisplayLink` output handler, and dropping its
   last handle, stops the link and waits for a handler that is still running.
   Don't do that on a thread the handler is waiting for.
+- `ImmortalDisplayLink` is `Send` and `Sync`. It keeps one native link per display for the process lifetime.
+  Drop does not stop the link. Call `stop` and `clear_output_handler` when you no longer need callbacks.
 
 ## Quick start
 
@@ -96,11 +99,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+## Per-display display link
+
+Use `coreanimation::display_link::ImmortalDisplayLink` to share one `CVDisplayLink` for each display.
+Its `Fn + Send + Sync` handler receives host timestamps on the Core Video display-link thread.
+You can call `start` and `stop` from any thread, also inside a handler.
+`StartOutcome::Started` means the native start finished.
+`StartOutcome::Pending` gives a receiver that reports the result of the start.
+If a start returns `Pending`, read the receiver after the display-link handler returns.
+
+```rust,no_run
+use coreanimation::display_link::{ImmortalDisplayLink, StartOutcome};
+
+fn start_display(display_id: u32) -> Result<(ImmortalDisplayLink, StartOutcome), coreanimation::CVReturn> {
+    let link = ImmortalDisplayLink::for_display(display_id)?;
+    link.set_output_handler(|now, output| {
+        let _host_ticks_until_frame = output.hostTime.saturating_sub(now.hostTime);
+    });
+    let outcome = link.start()?;
+    Ok((link, outcome))
+}
+```
+
+`current_host_time` returns Core Video host-clock ticks. `host_clock_frequency` returns ticks per second.
+Both functions are in `coreanimation::display_link`.
+
 ## Highlights
 
 - `Layer`, `ShapeLayer`, `TextLayer`, `GradientLayer`, `TransformLayer`, `ReplicatorLayer`, `ScrollLayer`, `TiledLayer`, `EmitterLayer`, `EmitterCell`, `MetalLayer`, `ToneMapMode`, `DynamicRange`, `Action`, `LayerDelegate`, `Constraint`, and `ConstraintLayoutManager`
 - `Animation`, `AnimationDelegate`, `PropertyAnimation`, `BasicAnimation`, `KeyframeAnimation`, `SpringAnimation`, `AnimationGroup`, `Transition`, `FrameRateRange`, `TimingFunction`, `TimingFunctionName`, `ValueFunction`, `ValueFunctionName`, `MediaTimingFillMode`, and `current_media_time`
-- `DisplayLink` for `CVDisplayLink` (closure output handler), `QuartzDisplayLink` for `CADisplayLink`, and `MetalDisplayLink` / `MetalDisplayLinkUpdate` for `CAMetalDisplayLink`
+- `DisplayLink` and `display_link::ImmortalDisplayLink` for `CVDisplayLink`, `QuartzDisplayLink` for `CADisplayLink`, and `MetalDisplayLink` / `MetalDisplayLinkUpdate` for `CAMetalDisplayLink`
 - `Transaction::set_completion_handler` for `CATransaction` completion blocks
 - `read_texture_bytes`, which copies any uncompressed CPU-readable 2D Metal texture, sized from `apple_metal::bytes_per_pixel`
 - `EDRMetadata`, `RemoteLayerClient`, `RemoteLayerServer`, `Renderer::new_with_color_space`, `CGColorSpace`, and `CGAffineTransform`
