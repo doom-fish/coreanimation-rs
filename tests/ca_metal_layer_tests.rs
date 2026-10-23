@@ -76,7 +76,7 @@ fn preferred_device_is_an_owned_metal_device() {
         let default = MetalDevice::system_default().expect("default device");
         assert_eq!(preferred.registry_id(), default.registry_id());
     }
-    assert!(!preferred.name().is_empty());
+    assert_ne!(preferred.name(), "");
 }
 
 #[test]
@@ -153,7 +153,7 @@ fn unsupported_pixel_formats_are_refused() {
         let error = layer
             .set_pixel_format(rejected)
             .expect_err("unsupported pixel format");
-        assert!(!error.to_string().is_empty());
+        assert_ne!(error.to_string(), "");
         assert_eq!(layer.pixel_format(), pixel_format::BGRA8UNORM);
     }
 
