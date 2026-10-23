@@ -5,6 +5,13 @@ All notable changes to `coreanimation-rs` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `ImmortalDisplayLink` keeps one `CVDisplayLink` for each display for the life of the process. It calls its handler on the CoreVideo thread, and `start` and `stop` are safe from any thread, also from inside a handler. A start that cannot finish at once returns `StartOutcome::Pending`.
+- `current_host_time` and `host_clock_frequency` read the CoreVideo host clock.
+
 ## [0.6.2] - 2026-10-23
 
 ### Added
