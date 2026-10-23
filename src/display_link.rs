@@ -241,10 +241,28 @@ unsafe impl Sync for ImmortalCVDisplayLink {}
 struct ImmortalDisplayLinkInner {
     ptr: ImmortalCVDisplayLink,
     display_id: u32,
-    running: AtomicBool,
     delivering: AtomicBool,
-    transition: Mutex<()>,
+    transition: Mutex<LinkTransition>,
     output: Mutex<Option<Arc<ImmortalOutput>>>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum LinkPhase {
+    Stopped,
+    Starting,
+    Running,
+    Stopping,
+}
+
+struct LinkTransition {
+    phase: LinkPhase,
+    desired_running: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum LinkOperation {
+    Start,
+    Stop,
 }
 
 #[derive(Default)]
@@ -314,9 +332,11 @@ impl ImmortalDisplayLink {
             let inner = Arc::new(ImmortalDisplayLinkInner {
                 ptr: ImmortalCVDisplayLink(ptr),
                 display_id,
-                running: AtomicBool::new(false),
                 delivering: AtomicBool::new(false),
-                transition: Mutex::new(()),
+                transition: Mutex::new(LinkTransition {
+                    phase: LinkPhase::Stopped,
+                    desired_running: false,
+                }),
                 output: Mutex::new(None),
             });
             assert!(slot.link.set(Arc::clone(&inner)).is_ok());
@@ -343,43 +363,102 @@ impl ImmortalDisplayLink {
     }
 
     pub fn start(&self) -> Result<(), CVReturn> {
-        let _transition = lock(&self.inner.transition);
-        if !self.is_running() {
-            let status = unsafe { crate::ffi::CVDisplayLinkStart(self.inner.ptr.0.as_ptr()) };
-            if status != 0 {
-                self.inner.running.store(
-                    unsafe { crate::ffi::CVDisplayLinkIsRunning(self.inner.ptr.0.as_ptr()) },
-                    Ordering::Release,
-                );
-                return Err(status);
+        let mut transition = lock(&self.inner.transition);
+        transition.desired_running = true;
+        match transition.phase {
+            LinkPhase::Stopped => {
+                transition.phase = LinkPhase::Starting;
+                drop(transition);
+                self.complete_transition(LinkOperation::Start)
             }
-            self.inner.running.store(true, Ordering::Release);
+            LinkPhase::Running => {
+                self.inner.delivering.store(true, Ordering::Release);
+                Ok(())
+            }
+            LinkPhase::Starting | LinkPhase::Stopping => Ok(()),
         }
-        self.inner.delivering.store(true, Ordering::Release);
-        Ok(())
     }
 
     pub fn stop(&self) -> Result<(), CVReturn> {
-        let _transition = lock(&self.inner.transition);
+        let mut transition = lock(&self.inner.transition);
+        transition.desired_running = false;
         self.inner.delivering.store(false, Ordering::Release);
-        if !self.is_running() {
-            return Ok(());
+        if transition.phase == LinkPhase::Running {
+            transition.phase = LinkPhase::Stopping;
+            drop(transition);
+            self.complete_transition(LinkOperation::Stop)
+        } else {
+            Ok(())
         }
-        let status = unsafe { crate::ffi::CVDisplayLinkStop(self.inner.ptr.0.as_ptr()) };
-        if status != 0 {
-            self.inner.running.store(
-                unsafe { crate::ffi::CVDisplayLinkIsRunning(self.inner.ptr.0.as_ptr()) },
-                Ordering::Release,
-            );
-            return Err(status);
-        }
-        self.inner.running.store(false, Ordering::Release);
-        Ok(())
     }
 
     #[must_use]
     pub fn is_running(&self) -> bool {
-        self.inner.running.load(Ordering::Acquire)
+        matches!(
+            lock(&self.inner.transition).phase,
+            LinkPhase::Running | LinkPhase::Stopping
+        )
+    }
+
+    fn complete_transition(&self, mut operation: LinkOperation) -> Result<(), CVReturn> {
+        let mut outcome = Ok(());
+        loop {
+            let status = unsafe {
+                match operation {
+                    LinkOperation::Start => {
+                        crate::ffi::CVDisplayLinkStart(self.inner.ptr.0.as_ptr())
+                    }
+                    LinkOperation::Stop => crate::ffi::CVDisplayLinkStop(self.inner.ptr.0.as_ptr()),
+                }
+            };
+            let native_running = if status == 0 {
+                operation == LinkOperation::Start
+            } else {
+                unsafe { crate::ffi::CVDisplayLinkIsRunning(self.inner.ptr.0.as_ptr()) }
+            };
+            if outcome.is_ok() {
+                outcome = cv_result(status);
+            }
+
+            let mut transition = lock(&self.inner.transition);
+            let next = match (native_running, transition.desired_running) {
+                (true, true) => {
+                    transition.phase = LinkPhase::Running;
+                    self.inner.delivering.store(true, Ordering::Release);
+                    None
+                }
+                (false, false) => {
+                    transition.phase = LinkPhase::Stopped;
+                    self.inner.delivering.store(false, Ordering::Release);
+                    None
+                }
+                (true, false) if status != 0 && operation == LinkOperation::Stop => {
+                    transition.phase = LinkPhase::Running;
+                    self.inner.delivering.store(false, Ordering::Release);
+                    None
+                }
+                (true, false) => {
+                    transition.phase = LinkPhase::Stopping;
+                    self.inner.delivering.store(false, Ordering::Release);
+                    Some(LinkOperation::Stop)
+                }
+                (false, true) if status != 0 && operation == LinkOperation::Start => {
+                    transition.phase = LinkPhase::Stopped;
+                    self.inner.delivering.store(false, Ordering::Release);
+                    None
+                }
+                (false, true) => {
+                    transition.phase = LinkPhase::Starting;
+                    self.inner.delivering.store(false, Ordering::Release);
+                    Some(LinkOperation::Start)
+                }
+            };
+            drop(transition);
+            match next {
+                Some(next) => operation = next,
+                None => return outcome,
+            }
+        }
     }
 }
 
@@ -435,7 +514,7 @@ mod immortal_tests {
     use super::*;
     use std::sync::atomic::AtomicUsize;
     use std::sync::mpsc;
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
 
     static TEST_LOCK: Mutex<()> = Mutex::new(());
 
@@ -527,5 +606,107 @@ mod immortal_tests {
         link.clear_output_handler();
         assert_eq!(status, 0);
         assert_eq!(calls.load(Ordering::SeqCst), 1);
+    }
+
+    fn callback_reenters_during_concurrent_stop(restart: bool) {
+        let _guard = lock(&TEST_LOCK);
+        let display_id = unsafe { CGMainDisplayID() };
+        if display_id == 0 {
+            return;
+        }
+
+        let link = ImmortalDisplayLink::for_display(display_id).expect("create display link");
+        link.stop().expect("stop display link");
+        let (entered_sender, entered_receiver) = mpsc::channel();
+        let (callback_sender, callback_receiver) = mpsc::channel();
+        let released = Arc::new(AtomicBool::new(false));
+        let calls = Arc::new(AtomicUsize::new(0));
+        let handler_link = link.clone();
+        let handler_released = Arc::clone(&released);
+        let handler_calls = Arc::clone(&calls);
+        link.set_output_handler(move |_, _| {
+            if handler_calls.fetch_add(1, Ordering::SeqCst) != 0 {
+                return;
+            }
+            let _ = entered_sender.send(());
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while !handler_released.load(Ordering::Acquire) {
+                if Instant::now() >= deadline {
+                    return;
+                }
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            let result = if restart {
+                handler_link.start()
+            } else {
+                handler_link.stop()
+            };
+            let _ = callback_sender.send(result);
+        });
+        link.start().expect("start display link");
+        entered_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("callback entered before stop");
+
+        let (stop_sender, stop_receiver) = mpsc::channel();
+        let stopping_link = link.clone();
+        let stopper = std::thread::spawn(move || {
+            let _ = stop_sender.send(stopping_link.stop());
+        });
+
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut stopping = false;
+        while Instant::now() < deadline {
+            if link
+                .inner
+                .transition
+                .try_lock()
+                .is_ok_and(|state| state.phase == LinkPhase::Stopping)
+            {
+                stopping = true;
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        if stopping {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        let stopped_before_callback_returned = stop_receiver.try_recv().is_ok();
+        released.store(true, Ordering::Release);
+        assert!(stopping, "stop never entered the Stopping state");
+        assert!(
+            !stopped_before_callback_returned,
+            "stop returned before the callback finished"
+        );
+
+        callback_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("callback re-entry completed")
+            .expect("callback re-entry succeeded");
+        stop_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("concurrent stop completed")
+            .expect("concurrent stop succeeded");
+        stopper.join().expect("stop thread completed");
+        assert_eq!(link.is_running(), restart);
+        if restart {
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while calls.load(Ordering::SeqCst) < 2 && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            assert!(calls.load(Ordering::SeqCst) >= 2);
+        }
+        link.stop().expect("stop display link after test");
+        link.clear_output_handler();
+    }
+
+    #[test]
+    fn callback_stops_while_another_thread_stops() {
+        callback_reenters_during_concurrent_stop(false);
+    }
+
+    #[test]
+    fn callback_starts_while_another_thread_stops() {
+        callback_reenters_during_concurrent_stop(true);
     }
 }
