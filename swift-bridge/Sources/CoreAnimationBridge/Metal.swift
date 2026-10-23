@@ -71,3 +71,40 @@ public func ca_metal_drawable_present(_ handle: UnsafeMutableRawPointer?) {
     guard let drawable: CAMetalDrawable = caBorrow(handle) else { return }
     drawable.present()
 }
+
+@_cdecl("ca_metal_drawable_present_in_command_buffer")
+public func ca_metal_drawable_present_in_command_buffer(
+    _ handle: UnsafeMutableRawPointer?,
+    _ commandBufferHandle: UnsafeMutableRawPointer?,
+    _ hasTime: Bool,
+    _ time: Double
+) {
+    guard let drawable: CAMetalDrawable = caBorrow(handle),
+          let commandBuffer: MTLCommandBuffer = caBorrow(commandBufferHandle)
+    else { return }
+    if hasTime {
+        commandBuffer.present(drawable, atTime: time)
+    } else {
+        commandBuffer.present(drawable)
+    }
+}
+
+@_cdecl("ca_metal_drawable_presented_time")
+public func ca_metal_drawable_presented_time(_ handle: UnsafeMutableRawPointer?) -> Double {
+    guard let drawable: CAMetalDrawable = caBorrow(handle) else { return 0 }
+    return drawable.presentedTime
+}
+
+@_cdecl("ca_metal_drawable_add_presented_handler")
+public func ca_metal_drawable_add_presented_handler(
+    _ handle: UnsafeMutableRawPointer?,
+    _ callback: (@convention(c) (UnsafeMutableRawPointer?, Double) -> Void)?,
+    _ context: UnsafeMutableRawPointer?,
+    _ release: (@convention(c) (UnsafeMutableRawPointer?) -> Void)?
+) {
+    guard let owner = CAContextOwner(context, release) else { return }
+    guard let drawable: CAMetalDrawable = caBorrow(handle), let callback else { return }
+    drawable.addPresentedHandler { presented in
+        callback(owner.context, presented.presentedTime)
+    }
+}

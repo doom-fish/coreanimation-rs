@@ -83,6 +83,15 @@ impl Layer {
     }
 
     #[must_use]
+    pub fn needs_display_on_bounds_change(&self) -> bool {
+        unsafe { crate::ffi::ca_layer_get_needs_display_on_bounds_change(self.as_ptr()) }
+    }
+
+    pub fn set_needs_display_on_bounds_change(&self, value: bool) {
+        unsafe { crate::ffi::ca_layer_set_needs_display_on_bounds_change(self.as_ptr(), value) };
+    }
+
+    #[must_use]
     /// Returns whether tone-map mode is supported.
     pub fn supports_tone_map_mode() -> bool {
         unsafe { crate::ffi::ca_layer_supports_tone_map_mode() }

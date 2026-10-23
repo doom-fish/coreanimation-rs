@@ -5,6 +5,14 @@ All notable changes to `coreanimation-rs` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `MetalDrawable::present_in` makes a command buffer present the drawable when the buffer is scheduled, at once or at a given time.
+- `MetalDrawable::presented_time` and `MetalDrawable::add_presented_handler` tell when the drawable came on screen.
+- `Layer::needs_display_on_bounds_change` and `Layer::set_needs_display_on_bounds_change` read and set the property of that name.
+
 ## [0.6.1] - 2026-10-23
 
 ### Added

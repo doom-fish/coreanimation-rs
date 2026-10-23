@@ -1,6 +1,10 @@
 use core::ffi::{c_char, c_void};
+use core::mem::ManuallyDrop;
 use std::ffi::CStr;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Deref};
+use std::sync::{Mutex, PoisonError};
+
+use doom_fish_utils::callback_context::CallbackContext;
 
 use apple_cf::cg::CGImage;
 use apple_cf::cg::{CGPoint, CGRect, CGSize};
@@ -700,6 +704,59 @@ impl MetalDrawable {
     pub fn present(&self) {
         unsafe { crate::ffi::ca_metal_drawable_present(self.ptr) };
     }
+
+    #[allow(clippy::missing_errors_doc)]
+    pub fn present_in(
+        &self,
+        command_buffer: &apple_metal::CommandBuffer,
+        at_time: Option<f64>,
+    ) -> Result<(), apple_metal::CommandBufferError> {
+        command_buffer.encode_foreign(|encoding| unsafe {
+            crate::ffi::ca_metal_drawable_present_in_command_buffer(
+                self.ptr,
+                encoding.command_buffer(),
+                at_time.is_some(),
+                at_time.unwrap_or_default(),
+            );
+        })
+    }
+
+    #[must_use]
+    pub fn presented_time(&self) -> f64 {
+        unsafe { crate::ffi::ca_metal_drawable_presented_time(self.ptr) }
+    }
+
+    pub fn add_presented_handler<F>(&self, handler: F)
+    where
+        F: FnOnce(f64) + Send + 'static,
+    {
+        let handler: Box<PresentedFn> = Box::new(handler);
+        let context = ManuallyDrop::new(CallbackContext::<PresentedHandler>::new(Mutex::new(
+            Some(handler),
+        )));
+        unsafe {
+            crate::ffi::ca_metal_drawable_add_presented_handler(
+                self.ptr,
+                Some(drawable_presented_trampoline),
+                context.as_ptr(),
+                Some(CallbackContext::<PresentedHandler>::RELEASE),
+            );
+        }
+    }
+}
+
+type PresentedFn = dyn FnOnce(f64) + Send;
+type PresentedHandler = Mutex<Option<Box<PresentedFn>>>;
+
+unsafe extern "C" fn drawable_presented_trampoline(context: *mut c_void, presented_time: f64) {
+    let _ = unsafe {
+        CallbackContext::<PresentedHandler>::with(context, "Drawable presented handler", |slot| {
+            let handler = slot.lock().unwrap_or_else(PoisonError::into_inner).take();
+            if let Some(handler) = handler {
+                handler(presented_time);
+            }
+        })
+    };
 }
 
 impl Layer {

@@ -9,6 +9,8 @@ pub use apple_cf::raw::{CVDisplayLinkOutputCallback, CVSMPTETime, CVTime, CVTime
 pub type TransactionCompletionCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
 
 pub type ContextReleaseCallback = Option<unsafe extern "C" fn(context: *mut c_void)>;
+pub type DrawablePresentedCallback =
+    Option<unsafe extern "C" fn(context: *mut c_void, presented_time: f64)>;
 
 #[allow(clippy::upper_case_acronyms)]
 pub type AnimationDidStartCallback =
@@ -260,6 +262,19 @@ unsafe extern "C" {
     pub fn ca_metal_layer_next_drawable(handle: *mut c_void) -> *mut c_void;
     pub fn ca_metal_drawable_get_texture(handle: *mut c_void) -> *mut c_void;
     pub fn ca_metal_drawable_present(handle: *mut c_void);
+    pub fn ca_metal_drawable_present_in_command_buffer(
+        handle: *mut c_void,
+        command_buffer: *mut c_void,
+        has_time: bool,
+        time: f64,
+    );
+    pub fn ca_metal_drawable_presented_time(handle: *mut c_void) -> f64;
+    pub fn ca_metal_drawable_add_presented_handler(
+        handle: *mut c_void,
+        callback: DrawablePresentedCallback,
+        context: *mut c_void,
+        release: ContextReleaseCallback,
+    );
 
     pub fn ca_animation_new() -> *mut c_void;
     pub fn ca_animation_get_duration(handle: *mut c_void) -> f64;
@@ -424,6 +439,8 @@ unsafe extern "C" {
     pub fn ca_layer_set_name(handle: *mut c_void, value: *const c_char);
     pub fn ca_layer_display(handle: *mut c_void);
     pub fn ca_layer_set_needs_display(handle: *mut c_void);
+    pub fn ca_layer_get_needs_display_on_bounds_change(handle: *mut c_void) -> bool;
+    pub fn ca_layer_set_needs_display_on_bounds_change(handle: *mut c_void, value: bool);
     pub fn ca_layer_display_if_needed(handle: *mut c_void);
     pub fn ca_layer_set_needs_layout(handle: *mut c_void);
     pub fn ca_layer_layout_if_needed(handle: *mut c_void);

@@ -80,3 +80,15 @@ public func ca_layer_set_tone_map_mode(_ handle: UnsafeMutableRawPointer?, _ val
     guard #available(macOS 15.0, *), let layer: CALayer = caBorrow(handle) else { return }
     layer.toneMapMode = caToneMapMode(value)
 }
+
+@_cdecl("ca_layer_get_needs_display_on_bounds_change")
+public func ca_layer_get_needs_display_on_bounds_change(_ handle: UnsafeMutableRawPointer?) -> Bool {
+    guard let layer: CALayer = caBorrow(handle) else { return false }
+    return layer.needsDisplayOnBoundsChange
+}
+
+@_cdecl("ca_layer_set_needs_display_on_bounds_change")
+public func ca_layer_set_needs_display_on_bounds_change(_ handle: UnsafeMutableRawPointer?, _ value: Bool) {
+    guard let layer: CALayer = caBorrow(handle) else { return }
+    layer.needsDisplayOnBoundsChange = value
+}
