@@ -235,7 +235,7 @@ unsafe extern "C" fn display_link_output_trampoline(
 type ImmortalOutput = dyn Fn(&CVTimeStamp, &CVTimeStamp) + Send + Sync + 'static;
 const CV_RETURN_ERROR: CVReturn = -6660;
 const CALLBACK_EXIT_TIMEOUT: Duration = Duration::from_secs(5);
-const START_RESULT_TIMEOUT: Duration = Duration::from_secs(10);
+const START_RESULT_TIMEOUT: Duration = Duration::from_millis(50);
 
 struct ImmortalCVDisplayLink(NonNull<c_void>);
 
@@ -273,7 +273,7 @@ pub enum StartOutcome {
 }
 
 std::thread_local! {
-    static IN_OUTPUT_CALLBACK: Cell<bool> = const { Cell::new(false) };
+    static CURRENT_OUTPUT_DISPLAY: Cell<Option<u32>> = const { Cell::new(None) };
 }
 
 #[derive(Default)]
@@ -284,22 +284,22 @@ struct CallbackGate {
 
 struct OutputCallbackGuard<'a> {
     gate: &'a CallbackGate,
-    previous: bool,
+    previous: Option<u32>,
 }
 
 impl<'a> OutputCallbackGuard<'a> {
-    fn enter(gate: &'a CallbackGate) -> Self {
+    fn enter(gate: &'a CallbackGate, display_id: u32) -> Self {
         *lock(&gate.active) += 1;
         Self {
             gate,
-            previous: IN_OUTPUT_CALLBACK.with(|active| active.replace(true)),
+            previous: CURRENT_OUTPUT_DISPLAY.with(|current| current.replace(Some(display_id))),
         }
     }
 }
 
 impl Drop for OutputCallbackGuard<'_> {
     fn drop(&mut self) {
-        IN_OUTPUT_CALLBACK.with(|active| active.set(self.previous));
+        CURRENT_OUTPUT_DISPLAY.with(|current| current.set(self.previous));
         *lock(&self.gate.active) -= 1;
         self.gate.idle.notify_all();
     }
@@ -405,7 +405,7 @@ impl ImmortalDisplayLink {
     }
 
     pub fn start(&self) -> Result<StartOutcome, CVReturn> {
-        let in_callback = IN_OUTPUT_CALLBACK.with(Cell::get);
+        let in_callback = CURRENT_OUTPUT_DISPLAY.with(|current| current.get().is_some());
         let mut transition = lock(&self.inner.transition);
         transition.desired_running = true;
         if transition.phase == LinkPhase::Running {
@@ -431,21 +431,29 @@ impl ImmortalDisplayLink {
         if in_callback {
             Ok(StartOutcome::Pending(receiver))
         } else {
-            receiver
-                .recv_timeout(START_RESULT_TIMEOUT)
-                .unwrap_or(Err(CV_RETURN_ERROR))
-                .map(|()| StartOutcome::Started)
+            match receiver.recv_timeout(START_RESULT_TIMEOUT) {
+                Ok(Ok(())) => Ok(StartOutcome::Started),
+                Ok(Err(status)) => Err(status),
+                Err(mpsc::RecvTimeoutError::Timeout) => Ok(StartOutcome::Pending(receiver)),
+                Err(mpsc::RecvTimeoutError::Disconnected) => Err(CV_RETURN_ERROR),
+            }
         }
     }
 
     pub fn stop(&self) -> Result<(), CVReturn> {
+        let in_another_callback = CURRENT_OUTPUT_DISPLAY
+            .with(|current| current.get().is_some_and(|id| id != self.inner.display_id));
         let mut transition = lock(&self.inner.transition);
         transition.desired_running = false;
         self.inner.delivering.store(false, Ordering::Release);
         if transition.phase == LinkPhase::Running {
             transition.phase = LinkPhase::Stopping;
             drop(transition);
-            self.complete_stop()
+            if in_another_callback {
+                self.spawn_stop()
+            } else {
+                self.complete_stop()
+            }
         } else {
             Ok(())
         }
@@ -475,6 +483,35 @@ impl ImmortalDisplayLink {
                 let _ = sender.send(Err(CV_RETURN_ERROR));
             }
         }
+    }
+
+    fn spawn_stop(&self) -> Result<(), CVReturn> {
+        let link = self.clone();
+        if std::thread::Builder::new()
+            .name("coreanimation-display-link-stop".to_owned())
+            .spawn(move || {
+                let _ = link.complete_stop();
+            })
+            .is_err()
+        {
+            let mut transition = lock(&self.inner.transition);
+            transition.phase = LinkPhase::Running;
+            let wants_running = transition.desired_running;
+            self.inner
+                .delivering
+                .store(wants_running, Ordering::Release);
+            let pending = core::mem::take(&mut transition.pending_starts);
+            drop(transition);
+            for sender in pending {
+                let _ = sender.send(if wants_running {
+                    Ok(())
+                } else {
+                    Err(CV_RETURN_ERROR)
+                });
+            }
+            return Err(CV_RETURN_ERROR);
+        }
+        Ok(())
     }
 
     fn complete_start(&self) {
@@ -611,7 +648,7 @@ unsafe extern "C" fn immortal_display_link_output(
         let handler = lock(&inner.output).clone();
         if let Some(handler) = handler {
             if inner.delivering.load(Ordering::Acquire) {
-                let _guard = OutputCallbackGuard::enter(&inner.callbacks);
+                let _guard = OutputCallbackGuard::enter(&inner.callbacks, display_id);
                 handler(now, output_time);
             }
         }
@@ -652,6 +689,11 @@ mod immortal_tests {
 
     unsafe extern "C" {
         fn CGMainDisplayID() -> u32;
+        fn CGGetActiveDisplayList(
+            max_displays: u32,
+            active_displays: *mut u32,
+            display_count: *mut u32,
+        ) -> i32;
     }
 
     #[test]
@@ -904,7 +946,7 @@ mod immortal_tests {
     }
 
     #[test]
-    fn external_start_during_callback_stop_receives_native_result() {
+    fn timed_out_start_during_callback_stop_keeps_native_result() {
         let _guard = lock(&TEST_LOCK);
         let display_id = unsafe { CGMainDisplayID() };
         if display_id == 0 {
@@ -969,18 +1011,21 @@ mod immortal_tests {
             }
             std::thread::sleep(Duration::from_millis(1));
         }
+        let timed_out_start = start_receiver.recv_timeout(Duration::from_secs(1));
         released.store(true, Ordering::Release);
         assert!(merged, "external start did not merge with callback stop");
 
+        let StartOutcome::Pending(pending) = timed_out_start
+            .expect("merged start returned after its wait limit")
+            .expect("merged start stayed pending")
+        else {
+            panic!("merged start must remain pending until its native result");
+        };
         callback_receiver
             .recv_timeout(Duration::from_secs(5))
             .expect("callback stop completed")
             .expect("callback stop succeeded");
-        let result = start_receiver
-            .recv_timeout(Duration::from_secs(5))
-            .expect("merged start completed")
-            .expect("merged native start succeeded");
-        assert!(matches!(result, StartOutcome::Started));
+        assert_eq!(pending.recv_timeout(Duration::from_secs(5)), Ok(Ok(())));
         worker.join().expect("start thread completed");
 
         let deadline = Instant::now() + Duration::from_secs(5);
@@ -991,5 +1036,116 @@ mod immortal_tests {
         assert!(link.is_running());
         link.stop().expect("stop display link after test");
         link.clear_output_handler();
+    }
+
+    #[test]
+    fn callbacks_on_two_displays_stop_each_other_without_blocking() {
+        let _guard = lock(&TEST_LOCK);
+        let mut display_ids = [0; 2];
+        let mut count = 0;
+        let status = unsafe { CGGetActiveDisplayList(2, display_ids.as_mut_ptr(), &raw mut count) };
+        assert_eq!(status, 0);
+        if count < 2 {
+            return;
+        }
+        let [first_id, second_id] = display_ids;
+        assert_ne!(first_id, second_id);
+        let first = ImmortalDisplayLink::for_display(first_id).expect("create first link");
+        let second = ImmortalDisplayLink::for_display(second_id).expect("create second link");
+        first.stop().expect("stop first link");
+        second.stop().expect("stop second link");
+
+        let (entered_sender, entered_receiver) = mpsc::channel();
+        let (stopped_sender, stopped_receiver) = mpsc::channel();
+        let released = Arc::new(AtomicBool::new(false));
+        let first_calls = Arc::new(AtomicUsize::new(0));
+        let second_calls = Arc::new(AtomicUsize::new(0));
+
+        let first_entered = entered_sender.clone();
+        let first_stopped = stopped_sender.clone();
+        let first_released = Arc::clone(&released);
+        let first_count = Arc::clone(&first_calls);
+        let stop_second = second.clone();
+        first.set_output_handler(move |_, _| {
+            if first_count.fetch_add(1, Ordering::SeqCst) != 0 {
+                return;
+            }
+            let _ = first_entered.send(first_id);
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while !first_released.load(Ordering::Acquire) && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            let _ = first_stopped.send((first_id, stop_second.stop()));
+        });
+
+        let second_released = Arc::clone(&released);
+        let second_count = Arc::clone(&second_calls);
+        let stop_first = first.clone();
+        second.set_output_handler(move |_, _| {
+            if second_count.fetch_add(1, Ordering::SeqCst) != 0 {
+                return;
+            }
+            let _ = entered_sender.send(second_id);
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while !second_released.load(Ordering::Acquire) && Instant::now() < deadline {
+                std::thread::sleep(Duration::from_millis(1));
+            }
+            let _ = stopped_sender.send((second_id, stop_first.stop()));
+        });
+
+        assert!(matches!(
+            first.start().expect("start first link"),
+            StartOutcome::Started
+        ));
+        assert!(matches!(
+            second.start().expect("start second link"),
+            StartOutcome::Started
+        ));
+        let entered_a = entered_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("first callback entered");
+        let entered_b = entered_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("second callback entered");
+        released.store(true, Ordering::Release);
+        assert_ne!(entered_a, entered_b);
+
+        let (stopped_a, result_a) = stopped_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("first callback returned from stop");
+        let (stopped_b, result_b) = stopped_receiver
+            .recv_timeout(Duration::from_secs(5))
+            .expect("second callback returned from stop");
+        assert_ne!(stopped_a, stopped_b);
+        result_a.expect("first cross-link stop");
+        result_b.expect("second cross-link stop");
+
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while (first.is_running() || second.is_running()) && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert!(!first.is_running());
+        assert!(!second.is_running());
+
+        assert!(matches!(
+            first.start().expect("restart first link"),
+            StartOutcome::Started
+        ));
+        assert!(matches!(
+            second.start().expect("restart second link"),
+            StartOutcome::Started
+        ));
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while (first_calls.load(Ordering::SeqCst) < 2 || second_calls.load(Ordering::SeqCst) < 2)
+            && Instant::now() < deadline
+        {
+            std::thread::sleep(Duration::from_millis(1));
+        }
+        assert!(first_calls.load(Ordering::SeqCst) >= 2);
+        assert!(second_calls.load(Ordering::SeqCst) >= 2);
+        first.stop().expect("stop first link after test");
+        second.stop().expect("stop second link after test");
+        first.clear_output_handler();
+        second.clear_output_handler();
     }
 }
