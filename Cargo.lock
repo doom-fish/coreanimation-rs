@@ -4,14 +4,14 @@ version = 3
 
 [[package]]
 name = "apple-cf"
-version = "0.11.3"
+version = "0.11.4"
 dependencies = [
  "doom-fish-utils",
 ]
 
 [[package]]
 name = "apple-metal"
-version = "0.10.2"
+version = "0.10.3"
 dependencies = [
  "apple-cf",
  "doom-fish-utils",
@@ -26,7 +26,7 @@ checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
 
 [[package]]
 name = "coreanimation-rs"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "apple-cf",
  "apple-metal",
