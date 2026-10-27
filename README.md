@@ -28,10 +28,13 @@ gaps.
 
 ```toml
 [dependencies]
-coreanimation-rs = "0.6"
+coreanimation-rs = "0.7.2"
 ```
 
 The library is imported as `coreanimation`.
+
+The crate calls the system allocator through local C declarations and uses `core::ffi` types.
+It does not require the `libc` crate.
 
 ## Threading
 

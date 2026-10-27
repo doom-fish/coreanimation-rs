@@ -1,6 +1,6 @@
 [package]
 name = "coreanimation-rs"
-version = "0.7.1"
+version = "0.7.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/doom-fish/coreanimation-rs"
@@ -41,9 +41,8 @@ default = []
 raw-ffi = []
 
 [dependencies]
-libc = "0.2"
 apple-cf = { path = "../apple-cf-rs", version = ">=0.11, <0.12", default-features = false, features = ["cg", "cv"] }
-apple-metal = { path = "../apple-metal-rs", version = ">=0.10, <0.11" }
+apple-metal = { path = "../apple-metal-rs", version = ">=0.10.4, <0.11" }
 doom-fish-utils = { path = "../doom-fish-utils", version = ">=0.4.1, <0.5" }
 
 [dev-dependencies]

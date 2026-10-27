@@ -382,13 +382,13 @@ impl Layer {
     }
 }
 
-fn take_c_string(ptr: *mut libc::c_char) -> Option<String> {
+fn take_c_string(ptr: *mut core::ffi::c_char) -> Option<String> {
     if ptr.is_null() {
         return None;
     }
     let value = unsafe { CStr::from_ptr(ptr) }
         .to_string_lossy()
         .into_owned();
-    unsafe { libc::free(ptr.cast()) };
+    unsafe { crate::system::free(ptr.cast()) };
     Some(value)
 }

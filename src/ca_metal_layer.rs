@@ -176,11 +176,11 @@ impl MetalLayer {
                     return None;
                 }
                 let owned = CStr::from_ptr(string).to_string_lossy().into_owned();
-                libc::free(string.cast());
+                crate::system::free(string.cast());
                 Some(owned)
             })
             .collect();
-        unsafe { libc::free(entries.cast()) };
+        unsafe { crate::system::free(entries.cast()) };
         Some(
             strings
                 .chunks_exact(2)
@@ -211,12 +211,12 @@ impl MetalLayer {
             .map_err(|_| {
                 CoreAnimationError::new("developer HUD property keys and values cannot contain NUL")
             })?;
-        let keys: Vec<*const libc::c_char> = entries
+        let keys: Vec<*const core::ffi::c_char> = entries
             .iter()
             .flatten()
             .map(|(key, _)| key.as_ptr())
             .collect();
-        let values: Vec<*const libc::c_char> = entries
+        let values: Vec<*const core::ffi::c_char> = entries
             .iter()
             .flatten()
             .map(|(_, value)| value.as_ptr())

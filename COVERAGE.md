@@ -1,5 +1,8 @@
 # Coverage
 
+Version 0.7.2 replaces the `libc` dependency with direct system C declarations.
+The framework coverage does not change.
+
 `coreanimation-rs` keeps the original broad modules (`animation`, `layer`, `display_link`, `emitter`, `renderer`, and `transaction`) and layers `ca_*` extensions on top.
 
 What the numbers measure: `COVERAGE_AUDIT.md` (generated against `MacOSX26.2.sdk`, not regenerated since) counts top-level `CA*.h` symbols only: classes, protocols, typealiases, constants and functions. A symbol is VERIFIED when a named Rust item exists for it, even if only some of its members are wrapped. Class members are not counted; see "Known member gaps" below for the ones that are missing.

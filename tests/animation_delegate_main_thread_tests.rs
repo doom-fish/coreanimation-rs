@@ -7,8 +7,12 @@ use coreanimation::{
     AnimationDelegate, BasicAnimation, CGRect, Layer, MetalDisplayLink, Transaction,
 };
 
+unsafe extern "C" {
+    fn pthread_main_np() -> core::ffi::c_int;
+}
+
 fn on_main_thread() -> bool {
-    unsafe { libc::pthread_main_np() != 0 }
+    unsafe { pthread_main_np() != 0 }
 }
 
 fn spin_main_run_loop_until(condition: impl Fn() -> bool) -> bool {

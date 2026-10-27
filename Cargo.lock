@@ -11,11 +11,10 @@ dependencies = [
 
 [[package]]
 name = "apple-metal"
-version = "0.10.3"
+version = "0.10.4"
 dependencies = [
  "apple-cf",
  "doom-fish-utils",
- "libc",
 ]
 
 [[package]]
@@ -26,13 +25,12 @@ checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
 
 [[package]]
 name = "coreanimation-rs"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "apple-cf",
  "apple-metal",
  "bitflags",
  "doom-fish-utils",
- "libc",
 ]
 
 [[package]]
@@ -80,12 +78,6 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
 ]
-
-[[package]]
-name = "libc"
-version = "0.2.186"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
 
 [[package]]
 name = "pin-project-lite"

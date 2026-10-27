@@ -12,7 +12,7 @@ impl Transition {
         let name = unsafe { std::ffi::CStr::from_ptr(ptr) }
             .to_string_lossy()
             .into_owned();
-        unsafe { libc::free(ptr.cast()) };
+        unsafe { crate::system::free(ptr.cast()) };
         Some(name)
     }
 

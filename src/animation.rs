@@ -635,30 +635,43 @@ impl AnimationLike for Transition {
     }
 }
 
-fn take_c_string(ptr: *mut libc::c_char) -> Option<String> {
+fn take_c_string(ptr: *mut core::ffi::c_char) -> Option<String> {
     if ptr.is_null() {
         return None;
     }
     let value = unsafe { CStr::from_ptr(ptr) }
         .to_string_lossy()
         .into_owned();
-    unsafe { libc::free(ptr.cast()) };
+    unsafe { crate::system::free(ptr.cast()) };
     Some(value)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        AnimationCalculationMode, RotationMode, TransitionSubtype, TransitionType,
-    };
+    use super::{AnimationCalculationMode, RotationMode, TransitionSubtype, TransitionType};
 
     #[test]
     fn animation_calculation_mode_from_raw_covers_all_variants() {
-        assert_eq!(AnimationCalculationMode::from_raw(-1), AnimationCalculationMode::Linear);
-        assert_eq!(AnimationCalculationMode::from_raw(1), AnimationCalculationMode::Discrete);
-        assert_eq!(AnimationCalculationMode::from_raw(2), AnimationCalculationMode::Paced);
-        assert_eq!(AnimationCalculationMode::from_raw(3), AnimationCalculationMode::Cubic);
-        assert_eq!(AnimationCalculationMode::from_raw(4), AnimationCalculationMode::CubicPaced);
+        assert_eq!(
+            AnimationCalculationMode::from_raw(-1),
+            AnimationCalculationMode::Linear
+        );
+        assert_eq!(
+            AnimationCalculationMode::from_raw(1),
+            AnimationCalculationMode::Discrete
+        );
+        assert_eq!(
+            AnimationCalculationMode::from_raw(2),
+            AnimationCalculationMode::Paced
+        );
+        assert_eq!(
+            AnimationCalculationMode::from_raw(3),
+            AnimationCalculationMode::Cubic
+        );
+        assert_eq!(
+            AnimationCalculationMode::from_raw(4),
+            AnimationCalculationMode::CubicPaced
+        );
     }
 
     #[test]
@@ -682,6 +695,9 @@ mod tests {
         assert_eq!(TransitionSubtype::from_raw(1), TransitionSubtype::FromRight);
         assert_eq!(TransitionSubtype::from_raw(2), TransitionSubtype::FromLeft);
         assert_eq!(TransitionSubtype::from_raw(3), TransitionSubtype::FromTop);
-        assert_eq!(TransitionSubtype::from_raw(4), TransitionSubtype::FromBottom);
+        assert_eq!(
+            TransitionSubtype::from_raw(4),
+            TransitionSubtype::FromBottom
+        );
     }
 }
