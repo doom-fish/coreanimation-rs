@@ -28,7 +28,7 @@ gaps.
 
 ```toml
 [dependencies]
-coreanimation-rs = "0.7.2"
+coreanimation-rs = "0.8.0"
 ```
 
 The library is imported as `coreanimation`.
