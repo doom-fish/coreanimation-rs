@@ -1,0 +1,1 @@
+allowed-duplicate-crates = ["apple-cf", "doom-fish-utils"]

@@ -19,6 +19,7 @@ include = [
     "swift-bridge/Sources/**/*",
     "build.rs",
     "Cargo.toml",
+    "clippy.toml",
     "README.md",
     "LICENSE-*",
     "CHANGELOG.md",
@@ -41,9 +42,9 @@ default = []
 raw-ffi = []
 
 [dependencies]
-apple-cf = { path = "../apple-cf-rs", version = "0.12.0", default-features = false, features = ["cg", "cv"] }
-apple-metal = { path = "../apple-metal-rs", version = ">=0.10.4, <0.11" }
-doom-fish-utils = { path = "../doom-fish-utils", version = "0.5.0" }
+apple-cf = { version = "0.12.0", default-features = false, features = ["cg", "cv"] }
+apple-metal = ">=0.10.4, <0.11"
+doom-fish-utils = "0.5.0"
 
 [dev-dependencies]
 # Cap the transitive bitflags that can be pulled into the dev/test build:

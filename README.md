@@ -158,6 +158,14 @@ Representative examples:
 
 Each logical area has a matching integration test under `tests/`, with extra unit coverage for animation-delegate callbacks.
 
+## Validation
+
+CI uses published crates from crates.io.
+The Clippy duplicate dependency exceptions are `apple-cf` and `doom-fish-utils`.
+`apple-metal` 0.10.4 needs `doom-fish-utils` 0.4, and its default `iosurface` feature needs `apple-cf` 0.11.
+The `iosurface` feature exposes the `IOSurfaceMetalExt` trait.
+When the dependency graph has one version of each crate, remove the exceptions.
+
 ## License
 
 Licensed under either of [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) at your option.

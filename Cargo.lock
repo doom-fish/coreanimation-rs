@@ -14,6 +14,8 @@ dependencies = [
 [[package]]
 name = "apple-cf"
 version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "799ab3415228df60c174342065a1c8270ddeaaa35770b2e4ec7a3f63def6199c"
 dependencies = [
  "doom-fish-utils 0.5.0",
 ]
@@ -21,6 +23,8 @@ dependencies = [
 [[package]]
 name = "apple-metal"
 version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e5ecd43c9a8443c6ea515108326330313d6390a0383152e6c2db7b776123974"
 dependencies = [
  "apple-cf 0.11.7",
  "doom-fish-utils 0.4.3",
@@ -51,3 +55,5 @@ checksum = "b17b6b508be066ed1f17547113c170b9105d9b7d9ba0a9c86b6dc767167ec0f3"
 [[package]]
 name = "doom-fish-utils"
 version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ae0c359a5058039843557499a8a8704d8fd8c71f9d02c49aec64a3cf06a4baf"

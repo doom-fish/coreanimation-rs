@@ -26,21 +26,6 @@ jobs:
         with:
           path: coreanimation-rs
           persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          repository: doom-fish/apple-cf-rs
-          path: apple-cf-rs
-          persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          repository: doom-fish/apple-metal-rs
-          path: apple-metal-rs
-          persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          repository: doom-fish/doom-fish-utils
-          path: doom-fish-utils
-          persist-credentials: false
       - run: rustc --version
       - run: swift --version && xcodebuild -version
       - run: cargo build --all-targets --all-features
