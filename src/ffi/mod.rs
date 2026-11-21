@@ -377,6 +377,7 @@ unsafe extern "C" {
     pub fn ca_renderer_next_frame_time(handle: *mut c_void) -> f64;
     pub fn ca_renderer_set_destination(handle: *mut c_void, texture_handle: *mut c_void);
     pub fn ca_renderer_render_at_time(handle: *mut c_void, time: f64);
+    pub fn ca_texture_read_status(texture_handle: *mut c_void) -> i32;
     pub fn ca_texture_copy_bytes(
         texture_handle: *mut c_void,
         out_bytes: *mut c_void,

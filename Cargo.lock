@@ -4,17 +4,26 @@ version = 3
 
 [[package]]
 name = "apple-cf"
-version = "0.11.4"
+version = "0.11.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a47effd5b5e7afd1c51ef8d1bacf86060565461c1fb6cf67aae433417c4048c"
 dependencies = [
- "doom-fish-utils",
+ "doom-fish-utils 0.4.3",
+]
+
+[[package]]
+name = "apple-cf"
+version = "0.12.0"
+dependencies = [
+ "doom-fish-utils 0.5.0",
 ]
 
 [[package]]
 name = "apple-metal"
 version = "0.10.4"
 dependencies = [
- "apple-cf",
- "doom-fish-utils",
+ "apple-cf 0.11.7",
+ "doom-fish-utils 0.4.3",
 ]
 
 [[package]]
@@ -25,62 +34,20 @@ checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
 
 [[package]]
 name = "coreanimation-rs"
-version = "0.7.2"
+version = "0.8.0"
 dependencies = [
- "apple-cf",
+ "apple-cf 0.12.0",
  "apple-metal",
  "bitflags",
- "doom-fish-utils",
+ "doom-fish-utils 0.5.0",
 ]
-
-[[package]]
-name = "crossbeam-queue"
-version = "0.3.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03e8bd762f7479489c70ed6c768ddca99d7296857de437a68dcb2a94365b3fae"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
-name = "crossbeam-utils"
-version = "0.8.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a31eee39dddec8330830986fcd7625edb5a24ec90ea038215273bbc3adb08ac6"
 
 [[package]]
 name = "doom-fish-utils"
-version = "0.4.1"
-dependencies = [
- "crossbeam-queue",
- "futures-util",
-]
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b17b6b508be066ed1f17547113c170b9105d9b7d9ba0a9c86b6dc767167ec0f3"
 
 [[package]]
-name = "futures-core"
-version = "0.3.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92d699e522242e69e3003b94ecc1f960f3a5e015aa7c5d7486e65ad01dd94f5e"
-
-[[package]]
-name = "futures-task"
-version = "0.3.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd417de3d1d015fc3bfd2b1ea46dfc7bab72ef86f1cc7cc9c78e728b34a6d1fd"
-
-[[package]]
-name = "futures-util"
-version = "0.3.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d50a92467f8ba5dd6e3ee5d4bd04d73ab2e4e1c44474a0674821dfce14b79bc"
-dependencies = [
- "futures-core",
- "futures-task",
- "pin-project-lite",
-]
-
-[[package]]
-name = "pin-project-lite"
-version = "0.2.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
+name = "doom-fish-utils"
+version = "0.5.0"

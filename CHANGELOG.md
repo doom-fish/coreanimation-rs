@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-21
+
+### Changed
+
+- Texture readback checks the native storage before it allocates the output buffer.
+- Public geometry and image types use apple-cf 0.12.
+
 ## [0.7.2] - 2026-10-27
 
 ### Changed

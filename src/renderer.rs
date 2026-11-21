@@ -154,6 +154,9 @@ pub fn read_texture_bytes(texture: &MetalTexture) -> Result<Vec<u8>, CoreAnimati
             "pixel format {format} has no CPU byte layout (compressed, depth, stencil or unknown)"
         ))
     })?;
+    check_texture_read(texture, unsafe {
+        crate::ffi::ca_texture_read_status(texture.as_ptr())
+    })?;
     let bytes_per_row = texture
         .width()
         .checked_mul(bytes_per_pixel)
@@ -174,8 +177,13 @@ pub fn read_texture_bytes(texture: &MetalTexture) -> Result<Vec<u8>, CoreAnimati
         )
     };
 
+    check_texture_read(texture, status)?;
+    Ok(bytes)
+}
+
+fn check_texture_read(texture: &MetalTexture, status: i32) -> Result<(), CoreAnimationError> {
     match status {
-        0 => Ok(bytes),
+        0 => Ok(()),
         2 => Err(CoreAnimationError::new(format!(
             "texture type {} is not a plain 2D texture",
             texture.texture_type()

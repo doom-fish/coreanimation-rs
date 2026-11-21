@@ -104,6 +104,19 @@ public func ca_renderer_render_at_time(_ handle: UnsafeMutableRawPointer?, _ tim
     renderer.endFrame()
 }
 
+private func textureReadStatus(_ texture: MTLTexture) -> Int32 {
+    guard texture.textureType == .type2D else { return 2 }
+    guard !texture.isFramebufferOnly else { return 4 }
+    guard texture.storageMode == .shared || texture.storageMode == .managed else { return 3 }
+    return 0
+}
+
+@_cdecl("ca_texture_read_status")
+public func ca_texture_read_status(_ handle: UnsafeMutableRawPointer?) -> Int32 {
+    guard let texture: MTLTexture = caBorrow(handle) else { return 1 }
+    return textureReadStatus(texture)
+}
+
 @_cdecl("ca_texture_copy_bytes")
 public func ca_texture_copy_bytes(
     _ textureHandle: UnsafeMutableRawPointer?,
@@ -113,9 +126,8 @@ public func ca_texture_copy_bytes(
     _ bytesPerPixel: Int
 ) -> Int32 {
     guard let texture: MTLTexture = caBorrow(textureHandle), let outBytes, bytesPerPixel > 0 else { return 1 }
-    guard texture.textureType == .type2D else { return 2 }
-    guard texture.storageMode == .shared || texture.storageMode == .managed else { return 3 }
-    guard !texture.isFramebufferOnly else { return 4 }
+    let status = textureReadStatus(texture)
+    guard status == 0 else { return status }
     let (rowBytes, rowOverflow) = texture.width.multipliedReportingOverflow(by: bytesPerPixel)
     let (byteCount, countOverflow) = bytesPerRow.multipliedReportingOverflow(by: texture.height)
     guard !rowOverflow, !countOverflow, bytesPerRow >= rowBytes, byteCount <= outLength else { return 5 }
